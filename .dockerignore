@@ -1,0 +1,13 @@
+.git
+.gitignore
+.pytest_cache
+.playwright-cli
+.omx
+__pycache__/
+*.py[cod]
+*.log
+docs/plans
+tests
+training
+output
+webapp/runtime
