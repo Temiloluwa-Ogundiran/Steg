@@ -1,0 +1,49 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: STEG
+    - generic [ref=e5]: SYSTEM V0.1.0
+    - generic [ref=e6]: FASTAPI / READY
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - complementary [ref=e9]:
+        - generic [ref=e10]: WORKSPACE
+        - generic [ref=e12]: MODE
+      - generic [ref=e13]:
+        - paragraph [ref=e14]: ACTIVE TOOL
+        - heading "Hide Signal. Reveal Truth." [level=1] [ref=e15]
+        - paragraph [ref=e16]: Encode, decode, and inspect images through a disciplined steganography workspace with direct access to all three pretrained architectures.
+        - tablist "Steg modes" [ref=e17]:
+          - button "ENCODE" [ref=e18]
+          - button "DECODE" [active] [ref=e19]
+          - button "CHECK" [ref=e20]
+    - generic [ref=e21]:
+      - complementary [ref=e22]:
+        - generic [ref=e23]: INPUT
+        - generic [ref=e24]: PAYLOAD
+        - generic [ref=e25]: RESULT
+      - generic [ref=e27]:
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - paragraph [ref=e62]: DECODE / IMAGE
+            - paragraph [ref=e63]: Recover a hidden message from a candidate image using a selected model architecture.
+          - generic [ref=e64]:
+            - generic [ref=e65]:
+              - generic [ref=e66]: IMAGE
+              - button "IMAGE Awaiting image" [ref=e67]
+              - generic [ref=e68]: Awaiting image
+            - generic [ref=e69]:
+              - generic [ref=e70]: ARCHITECTURE
+              - combobox "ARCHITECTURE" [ref=e71]:
+                - option "BASIC" [selected]
+                - option "DENSE"
+                - option "RESIDUAL"
+          - button "DECODE IMAGE" [ref=e72] [cursor=pointer]
+        - complementary [ref=e46]:
+          - paragraph [ref=e47]: RESULT
+          - generic [ref=e48]:
+            - paragraph [ref=e53]: ENCODE COMPLETE
+            - heading "Output generated." [level=2] [ref=e54]
+            - img "Encoded image preview" [ref=e55]
+            - paragraph [ref=e56]: The encoded image is ready for inspection or download.
+            - link "Download image" [ref=e58] [cursor=pointer]:
+              - /url: /api/download/b43b4d3dd62b454f8f9738d8544b881e

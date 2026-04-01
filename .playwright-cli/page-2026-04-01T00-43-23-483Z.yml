@@ -1,0 +1,46 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: STEG
+    - generic [ref=e5]: SYSTEM V0.1.0
+    - generic [ref=e6]: FASTAPI / READY
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - complementary [ref=e9]:
+        - generic [ref=e10]: WORKSPACE
+        - generic [ref=e12]: MODE
+      - generic [ref=e13]:
+        - paragraph [ref=e14]: ACTIVE TOOL
+        - heading "Hide Signal. Reveal Truth." [level=1] [ref=e15]
+        - paragraph [ref=e16]: Encode, decode, and inspect images through a disciplined steganography workspace with direct access to all three pretrained architectures.
+        - tablist "Steg modes" [ref=e17]:
+          - button "ENCODE" [ref=e18]
+          - button "DECODE" [ref=e19]
+          - button "CHECK" [ref=e20]
+    - generic [ref=e21]:
+      - complementary [ref=e22]:
+        - generic [ref=e23]: INPUT
+        - generic [ref=e24]: PAYLOAD
+        - generic [ref=e25]: RESULT
+      - generic [ref=e27]:
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - paragraph [ref=e85]: CHECK / IMAGE
+            - paragraph [ref=e86]: Run a strict presence check. An image only passes when a valid message can be recovered.
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - generic [ref=e89]: IMAGE
+              - button "IMAGE b4c0dffb494a4d61be14156f5dadfa3e.png" [active] [ref=e96]
+              - generic [ref=e91]: b4c0dffb494a4d61be14156f5dadfa3e.png
+            - generic [ref=e92]:
+              - generic [ref=e93]: ARCHITECTURE
+              - combobox "ARCHITECTURE" [ref=e94]:
+                - option "BASIC"
+                - option "DENSE" [selected]
+                - option "RESIDUAL"
+          - button "CHECK IMAGE" [ref=e95] [cursor=pointer]
+        - complementary [ref=e46]:
+          - paragraph [ref=e47]: RESULT
+          - generic [ref=e48]:
+            - paragraph [ref=e79]: DECODED MESSAGE
+            - heading "Message recovered." [level=2] [ref=e80]
+            - paragraph [ref=e81]: secret-message

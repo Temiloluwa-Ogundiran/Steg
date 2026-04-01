@@ -1,0 +1,46 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: STEG
+    - generic [ref=e5]: SYSTEM V0.1.0
+    - generic [ref=e6]: FASTAPI / READY
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - complementary [ref=e9]:
+        - generic [ref=e10]: WORKSPACE
+        - generic [ref=e12]: MODE
+      - generic [ref=e13]:
+        - paragraph [ref=e14]: ACTIVE TOOL
+        - heading "Hide Signal. Reveal Truth." [level=1] [ref=e15]
+        - paragraph [ref=e16]: Encode, decode, and inspect images through a disciplined steganography workspace with direct access to all three pretrained architectures.
+        - tablist "Steg modes" [ref=e17]:
+          - button "ENCODE" [ref=e18]
+          - button "DECODE" [ref=e19]
+          - button "CHECK" [active] [ref=e20]
+    - generic [ref=e21]:
+      - complementary [ref=e22]:
+        - generic [ref=e23]: INPUT
+        - generic [ref=e24]: PAYLOAD
+        - generic [ref=e25]: RESULT
+      - generic [ref=e27]:
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - paragraph [ref=e55]: CHECK / IMAGE
+            - paragraph [ref=e56]: Run a strict presence check. An image only passes when a valid message can be recovered.
+          - generic [ref=e57]:
+            - generic [ref=e58]:
+              - generic [ref=e59]: IMAGE
+              - button "IMAGE Awaiting image" [ref=e60]
+              - generic [ref=e61]: Awaiting image
+            - generic [ref=e62]:
+              - generic [ref=e63]: ARCHITECTURE
+              - combobox "ARCHITECTURE" [ref=e64]:
+                - option "BASIC" [selected]
+                - option "DENSE"
+                - option "RESIDUAL"
+          - button "CHECK IMAGE" [ref=e65] [cursor=pointer]
+        - complementary [ref=e46]:
+          - paragraph [ref=e47]: RESULT
+          - generic [ref=e48]:
+            - paragraph [ref=e49]: READY
+            - heading "Select a mode and submit an image." [level=2] [ref=e50]
+            - paragraph [ref=e51]: The result rail will render encoded output, recovered text, or strict verification status here.

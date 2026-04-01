@@ -1,0 +1,50 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: STEG
+    - generic [ref=e5]: SYSTEM V0.1.0
+    - generic [ref=e6]: FASTAPI / READY
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - complementary [ref=e9]:
+        - generic [ref=e10]: WORKSPACE
+        - generic [ref=e12]: MODE
+      - generic [ref=e13]:
+        - paragraph [ref=e14]: ACTIVE TOOL
+        - heading "Hide Signal. Reveal Truth." [level=1] [ref=e15]
+        - paragraph [ref=e16]: Encode, decode, and inspect images through a disciplined steganography workspace with direct access to all three pretrained architectures.
+        - tablist "Steg modes" [ref=e17]:
+          - button "ENCODE" [active] [ref=e18]
+          - button "DECODE" [ref=e19]
+          - button "CHECK" [ref=e20]
+    - generic [ref=e21]:
+      - complementary [ref=e22]:
+        - generic [ref=e23]: INPUT
+        - generic [ref=e24]: PAYLOAD
+        - generic [ref=e25]: RESULT
+      - generic [ref=e27]:
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - paragraph [ref=e32]: ENCODE / IMAGE + TEXT
+            - paragraph [ref=e33]: Hide a message inside an image and prepare the output for download.
+          - generic [ref=e34]:
+            - generic [ref=e35]:
+              - generic [ref=e36]: IMAGE
+              - button "IMAGE Awaiting image" [ref=e37]
+              - generic [ref=e38]: Awaiting image
+            - generic [ref=e39]:
+              - generic [ref=e40]: ARCHITECTURE
+              - combobox "ARCHITECTURE" [ref=e41]:
+                - option "BASIC" [selected]
+                - option "DENSE"
+                - option "RESIDUAL"
+          - generic [ref=e42]:
+            - generic [ref=e43]: MESSAGE
+            - textbox "MESSAGE" [ref=e44]:
+              - /placeholder: Enter the hidden payload.
+          - button "ENCODE IMAGE" [ref=e45] [cursor=pointer]
+        - complementary [ref=e46]:
+          - paragraph [ref=e47]: RESULT
+          - generic [ref=e48]:
+            - paragraph [ref=e67]: STRICT CHECK
+            - heading "No hidden data found." [level=2] [ref=e68]
+            - paragraph [ref=e69]: No hidden data found.

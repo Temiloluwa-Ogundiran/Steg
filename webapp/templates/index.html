@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ app_title }}</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23E3E2DE'/%3E%3Crect x='14' y='14' width='36' height='36' fill='%231351AA'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+    <script defer src="{{ url_for('static', path='app.js') }}"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand">STEG</div>
+        <div class="status">SYSTEM V{{ app_version }}</div>
+        <div class="topbar-spacer" aria-hidden="true"></div>
+      </header>
+
+      <main class="workspace">
+        <section class="surface-grid hero-band">
+          <aside class="sidebar">
+            <div class="sidebar-label">WORKSPACE</div>
+            <div class="sidebar-marker"></div>
+            <div class="sidebar-label sidebar-label--lower">MODE</div>
+          </aside>
+
+          <section class="hero">
+            <p class="eyebrow">ACTIVE TOOL</p>
+            <h1>Hide Signal. <span>Reveal Truth.</span></h1>
+            <p class="lede">
+              Encode, decode, and inspect images through a disciplined steganography workspace with direct access to all three pretrained architectures.
+            </p>
+
+            <div class="mode-switcher" role="tablist" aria-label="Steg modes">
+              <button
+                type="button"
+                class="mode-switcher__button is-active"
+                data-mode-target="encode"
+                aria-selected="true"
+              >
+                ENCODE
+              </button>
+              <button
+                type="button"
+                class="mode-switcher__button"
+                data-mode-target="decode"
+                aria-selected="false"
+              >
+                DECODE
+              </button>
+              <button
+                type="button"
+                class="mode-switcher__button"
+                data-mode-target="check"
+                aria-selected="false"
+              >
+                CHECK
+              </button>
+            </div>
+          </section>
+        </section>
+
+        <section class="surface-grid tool-band">
+          <aside class="sidebar sidebar--tools">
+            <div class="sidebar-label">INPUT</div>
+            <div class="sidebar-label sidebar-label--lower">PAYLOAD</div>
+            <div class="sidebar-label sidebar-label--lower">RESULT</div>
+          </aside>
+
+          <section class="tool-stage">
+            <div class="tool-stage__grid">
+              <div class="tool-column">
+                <section class="mode-panel is-active" data-mode-panel="encode">
+                  <form
+                    id="encode-form"
+                    class="tool-form"
+                    data-api-endpoint="/api/encode"
+                    data-result-kind="encode"
+                  >
+                    <div class="form-header">
+                      <p class="form-label">ENCODE / IMAGE + TEXT</p>
+                      <p class="form-copy">Hide a message inside an image and prepare the output for download.</p>
+                    </div>
+
+                    <div class="form-grid">
+                      <label class="field field--file">
+                        <span class="field__label">IMAGE</span>
+                        <input type="file" name="image" accept="image/*" required>
+                        <span class="field__meta" data-file-name>Awaiting image</span>
+                      </label>
+
+                      <div class="field">
+                        <span class="field__label">ARCHITECTURE</span>
+                        <div class="field__static">{{ default_architecture|upper }}</div>
+                      </div>
+                    </div>
+
+                    <label class="field field--message">
+                      <span class="field__label">MESSAGE</span>
+                      <textarea name="message" rows="6" placeholder="Enter the hidden payload." required></textarea>
+                    </label>
+
+                    <button type="submit" class="poster-button">ENCODE IMAGE</button>
+                  </form>
+                </section>
+
+                <section class="mode-panel" data-mode-panel="decode" hidden>
+                  <form
+                    id="decode-form"
+                    class="tool-form"
+                    data-api-endpoint="/api/decode"
+                    data-result-kind="decode"
+                  >
+                    <div class="form-header">
+                      <p class="form-label">DECODE / IMAGE</p>
+                      <p class="form-copy">Recover a hidden message from a candidate image using a selected model architecture.</p>
+                    </div>
+
+                    <div class="form-grid">
+                      <label class="field field--file">
+                        <span class="field__label">IMAGE</span>
+                        <input type="file" name="image" accept="image/*" required>
+                        <span class="field__meta" data-file-name>Awaiting image</span>
+                      </label>
+
+                      <div class="field">
+                        <span class="field__label">ARCHITECTURE</span>
+                        <div class="field__static">{{ default_architecture|upper }}</div>
+                      </div>
+                    </div>
+
+                    <button type="submit" class="poster-button poster-button--dark">DECODE IMAGE</button>
+                  </form>
+                </section>
+
+                <section class="mode-panel" data-mode-panel="check" hidden>
+                  <form
+                    id="check-form"
+                    class="tool-form"
+                    data-api-endpoint="/api/check"
+                    data-result-kind="check"
+                  >
+                    <div class="form-header">
+                      <p class="form-label">CHECK / IMAGE</p>
+                      <p class="form-copy">Run a strict presence check. An image only passes when a valid message can be recovered.</p>
+                    </div>
+
+                    <div class="form-grid">
+                      <label class="field field--file">
+                        <span class="field__label">IMAGE</span>
+                        <input type="file" name="image" accept="image/*" required>
+                        <span class="field__meta" data-file-name>Awaiting image</span>
+                      </label>
+
+                      <div class="field">
+                        <span class="field__label">ARCHITECTURE</span>
+                        <div class="field__static">{{ default_architecture|upper }}</div>
+                      </div>
+                    </div>
+
+                    <button type="submit" class="poster-button poster-button--dark">CHECK IMAGE</button>
+                  </form>
+                </section>
+              </div>
+
+              <aside class="result-rail">
+                <p class="result-rail__label">RESULT</p>
+                <div id="result-panel" class="result-panel" data-state="idle">
+                  <p class="result-panel__kicker">READY</p>
+                  <h2 class="result-panel__headline">Select a mode and submit an image.</h2>
+                  <p class="result-panel__copy">
+                    The result rail will render encoded output, recovered text, or strict verification status here.
+                  </p>
+                </div>
+              </aside>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

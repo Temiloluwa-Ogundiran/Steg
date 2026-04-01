@@ -1,0 +1,46 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: STEG
+    - generic [ref=e5]: SYSTEM V0.1.0
+    - generic [ref=e6]: FASTAPI / READY
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - complementary [ref=e9]:
+        - generic [ref=e10]: WORKSPACE
+        - generic [ref=e12]: MODE
+      - generic [ref=e13]:
+        - paragraph [ref=e14]: ACTIVE TOOL
+        - heading "Hide Signal. Reveal Truth." [level=1] [ref=e15]
+        - paragraph [ref=e16]: Encode, decode, and inspect images through a disciplined steganography workspace with direct access to all three pretrained architectures.
+        - tablist "Steg modes" [ref=e17]:
+          - button "ENCODE" [ref=e18]
+          - button "DECODE" [ref=e19]
+          - button "CHECK" [ref=e20]
+    - generic [ref=e21]:
+      - complementary [ref=e22]:
+        - generic [ref=e23]: INPUT
+        - generic [ref=e24]: PAYLOAD
+        - generic [ref=e25]: RESULT
+      - generic [ref=e27]:
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - paragraph [ref=e62]: DECODE / IMAGE
+            - paragraph [ref=e63]: Recover a hidden message from a candidate image using a selected model architecture.
+          - generic [ref=e64]:
+            - generic [ref=e65]:
+              - generic [ref=e66]: IMAGE
+              - button "IMAGE b43b4d3dd62b454f8f9738d8544b881e.png" [ref=e73]
+              - generic [ref=e68]: b43b4d3dd62b454f8f9738d8544b881e.png
+            - generic [ref=e69]:
+              - generic [ref=e70]: ARCHITECTURE
+              - combobox "ARCHITECTURE" [ref=e71]:
+                - option "BASIC" [selected]
+                - option "DENSE"
+                - option "RESIDUAL"
+          - button "Processing..." [disabled] [ref=e74]
+        - complementary [ref=e46]:
+          - paragraph [ref=e47]: RESULT
+          - generic [ref=e48]:
+            - paragraph [ref=e75]: WORKING
+            - heading "Processing request." [level=2] [ref=e76]
+            - paragraph [ref=e77]: The selected image and architecture are being evaluated now.

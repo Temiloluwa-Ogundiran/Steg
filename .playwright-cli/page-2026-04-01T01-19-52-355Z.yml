@@ -1,0 +1,45 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: STEG
+    - generic [ref=e5]: SYSTEM V0.1.0
+  - main [ref=e6]:
+    - generic [ref=e7]:
+      - complementary [ref=e8]:
+        - generic [ref=e9]: WORKSPACE
+        - generic [ref=e11]: MODE
+      - generic [ref=e12]:
+        - paragraph [ref=e13]: ACTIVE TOOL
+        - heading "Hide Signal. Reveal Truth." [level=1] [ref=e14]
+        - paragraph [ref=e15]: Encode, decode, and inspect images through a disciplined steganography workspace with direct access to all three pretrained architectures.
+        - tablist "Steg modes" [ref=e16]:
+          - button "ENCODE" [ref=e17]
+          - button "DECODE" [ref=e18]
+          - button "CHECK" [ref=e19]
+    - generic [ref=e20]:
+      - complementary [ref=e21]:
+        - generic [ref=e22]: INPUT
+        - generic [ref=e23]: PAYLOAD
+        - generic [ref=e24]: RESULT
+      - generic [ref=e26]:
+        - generic [ref=e59]:
+          - generic [ref=e60]:
+            - paragraph [ref=e61]: DECODE / IMAGE
+            - paragraph [ref=e62]: Recover a hidden message from a candidate image using a selected model architecture.
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - generic [ref=e65]: IMAGE
+              - button "IMAGE cb44919921684ce696b25dc5a931e1fc.png" [active] [ref=e72]
+              - generic [ref=e67]: cb44919921684ce696b25dc5a931e1fc.png
+            - generic [ref=e68]:
+              - generic [ref=e69]: ARCHITECTURE
+              - generic [ref=e70]: DENSE
+          - button "DECODE IMAGE" [ref=e71] [cursor=pointer]
+        - complementary [ref=e45]:
+          - paragraph [ref=e46]: RESULT
+          - generic [ref=e47]:
+            - paragraph [ref=e52]: ENCODE COMPLETE
+            - heading "Output generated." [level=2] [ref=e53]
+            - img "Encoded image preview" [ref=e54]
+            - paragraph [ref=e55]: The encoded image is ready for inspection or download.
+            - link "Download image" [ref=e57] [cursor=pointer]:
+              - /url: /api/download/cb44919921684ce696b25dc5a931e1fc

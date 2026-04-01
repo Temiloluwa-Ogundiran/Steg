@@ -1,0 +1,46 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: STEG
+    - generic [ref=e5]: SYSTEM V0.1.0
+  - main [ref=e6]:
+    - generic [ref=e7]:
+      - complementary [ref=e8]:
+        - generic [ref=e9]: WORKSPACE
+        - generic [ref=e11]: MODE
+      - generic [ref=e12]:
+        - paragraph [ref=e13]: ACTIVE TOOL
+        - heading "Hide Signal. Reveal Truth." [level=1] [ref=e14]
+        - paragraph [ref=e15]: Encode, decode, and inspect images through a disciplined steganography workspace with direct access to all three pretrained architectures.
+        - tablist "Steg modes" [ref=e16]:
+          - button "ENCODE" [ref=e17]
+          - button "DECODE" [ref=e18]
+          - button "CHECK" [ref=e19]
+    - generic [ref=e20]:
+      - complementary [ref=e21]:
+        - generic [ref=e22]: INPUT
+        - generic [ref=e23]: PAYLOAD
+        - generic [ref=e24]: RESULT
+      - generic [ref=e26]:
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - paragraph [ref=e31]: ENCODE / IMAGE + TEXT
+            - paragraph [ref=e32]: Hide a message inside an image and prepare the output for download.
+          - generic [ref=e33]:
+            - generic [ref=e34]:
+              - generic [ref=e35]: IMAGE
+              - button "IMAGE nocode.jpg" [active] [ref=e51]
+              - generic [ref=e37]: nocode.jpg
+            - generic [ref=e38]:
+              - generic [ref=e39]: ARCHITECTURE
+              - generic [ref=e40]: DENSE
+          - generic [ref=e41]:
+            - generic [ref=e42]: MESSAGE
+            - textbox "MESSAGE" [ref=e43]:
+              - /placeholder: Enter the hidden payload.
+          - button "ENCODE IMAGE" [ref=e44] [cursor=pointer]
+        - complementary [ref=e45]:
+          - paragraph [ref=e46]: RESULT
+          - generic [ref=e47]:
+            - paragraph [ref=e48]: READY
+            - heading "Select a mode and submit an image." [level=2] [ref=e49]
+            - paragraph [ref=e50]: The result rail will render encoded output, recovered text, or strict verification status here.
