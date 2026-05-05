@@ -1,3 +1,5 @@
+console.log("[STEG] app.js v2 loaded");
+
 const modeButtons = document.querySelectorAll("[data-mode-target]");
 const modePanels = document.querySelectorAll("[data-mode-panel]");
 const terminalBody = document.getElementById("terminal-body");
@@ -137,9 +139,13 @@ function setSubmitting(form, isSubmitting) {
 async function fetchMetrics() {
   try {
     const response = await fetch("/api/metrics");
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.warn("[STEG] metrics endpoint returned", response.status);
+      return null;
+    }
     return await response.json();
-  } catch {
+  } catch (err) {
+    console.warn("[STEG] metrics fetch failed:", err.message);
     return null;
   }
 }
