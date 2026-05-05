@@ -68,6 +68,45 @@ def test_optimization_defaults_are_defined():
     assert services.OUTPUT_RETENTION_SECONDS > 0
 
 
+def test_encryption_defaults_are_defined():
+    assert services.ENCRYPTED_PAYLOAD_PREFIX == "STEGv1:"
+    assert services.PASSPHRASE_MIN_LENGTH == 12
+    assert services.KDF_SALT_BYTES > 0
+    assert services.ENCRYPTION_NONCE_BYTES > 0
+
+
+def test_encrypt_message_creates_prefixed_payload():
+    payload = services._encrypt_message("secret", "correct horse battery staple")
+
+    assert payload.startswith("STEGv1:")
+    assert services._is_supported_payload(payload) is True
+
+
+def test_decrypt_message_round_trips_with_correct_passphrase():
+    payload = services._encrypt_message("secret", "correct horse battery staple")
+
+    assert services._decrypt_message(payload, "correct horse battery staple") == "secret"
+
+
+def test_decrypt_message_rejects_wrong_passphrase():
+    payload = services._encrypt_message("secret", "correct horse battery staple")
+
+    with pytest.raises(services.ServiceValidationError, match="Invalid passphrase or corrupted payload."):
+        services._decrypt_message(payload, "wrong-passphrase")
+
+
+def test_is_supported_payload_detects_only_new_envelopes():
+    payload = services._encrypt_message("secret", "correct horse battery staple")
+    assert services._is_supported_payload(payload) is True
+    assert services._is_supported_payload("legacy-text") is False
+    assert services._is_supported_payload("") is False
+
+
+def test_is_supported_payload_rejects_malformed_envelopes():
+    assert services._is_supported_payload("STEGv1:!!!!.!!!!.!!!!") is False
+    assert services._is_supported_payload("STEGv1:a.b.c") is False
+
+
 def test_write_upload_normalizes_and_resizes_oversized_images(tmp_path, monkeypatch):
     monkeypatch.setattr(services, "UPLOAD_DIR", tmp_path / "uploads")
     monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
@@ -103,9 +142,10 @@ def test_encode_image_persists_input_and_returns_download_metadata(tmp_path, mon
 
     model = MagicMock()
 
-    def encode_side_effect(input_path, output_path, message):
+    def encode_side_effect(input_path, output_path, payload):
         assert Path(input_path).exists()
-        assert message == "secret message"
+        assert payload.startswith(services.ENCRYPTED_PAYLOAD_PREFIX)
+        assert services._decrypt_message(payload, "correct horse battery staple") == "secret message"
         Path(output_path).write_bytes(b"encoded")
 
     model.encode.side_effect = encode_side_effect
@@ -116,6 +156,7 @@ def test_encode_image_persists_input_and_returns_download_metadata(tmp_path, mon
         filename="cover.png",
         contents=make_png_bytes(),
         message="secret message",
+        passphrase="correct horse battery staple",
     )
 
     assert result["ok"] is True
@@ -151,6 +192,7 @@ def test_encode_image_cleans_temp_upload_and_stale_outputs(tmp_path, monkeypatch
         filename="cover.png",
         contents=make_png_bytes(),
         message="secret message",
+        passphrase="correct horse battery staple",
     )
 
     assert result["ok"] is True
@@ -169,6 +211,35 @@ def test_encode_image_rejects_empty_message(tmp_path, monkeypatch):
             filename="cover.png",
             contents=make_png_bytes(),
             message="   ",
+            passphrase="correct horse battery staple",
+        )
+
+
+def test_encode_image_rejects_empty_passphrase(tmp_path, monkeypatch):
+    monkeypatch.setattr(services, "UPLOAD_DIR", tmp_path / "uploads")
+    monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
+
+    with pytest.raises(services.ServiceValidationError, match="Passphrase is required."):
+        services.encode_image(
+            architecture="dense",
+            filename="cover.png",
+            contents=make_png_bytes(),
+            message="secret message",
+            passphrase="   ",
+        )
+
+
+def test_encode_image_rejects_short_passphrase(tmp_path, monkeypatch):
+    monkeypatch.setattr(services, "UPLOAD_DIR", tmp_path / "uploads")
+    monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
+
+    with pytest.raises(services.ServiceValidationError, match="Passphrase must be at least 12 characters."):
+        services.encode_image(
+            architecture="dense",
+            filename="cover.png",
+            contents=make_png_bytes(),
+            message="secret message",
+            passphrase="too-short",
         )
 
 
@@ -188,6 +259,7 @@ def test_encode_image_cleans_temp_upload_on_processing_error(tmp_path, monkeypat
             filename="cover.png",
             contents=make_png_bytes(),
             message="secret message",
+            passphrase="correct horse battery staple",
         )
 
     assert not list(upload_dir.glob("*"))
@@ -198,17 +270,44 @@ def test_decode_image_returns_message(tmp_path, monkeypatch):
     monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
 
     model = MagicMock()
-    model.decode.return_value = "hello"
+    model.decode.return_value = services._encrypt_message("hello", "correct horse battery staple")
     monkeypatch.setattr(services, "get_model", MagicMock(return_value=model))
 
     result = services.decode_image(
         architecture="residual",
         filename="encoded.png",
         contents=make_png_bytes(),
+        passphrase="correct horse battery staple",
     )
 
     assert result == {"ok": True, "message": "hello", "architecture": "residual"}
     assert not list((tmp_path / "uploads").glob("*"))
+
+
+def test_decode_image_requires_passphrase(tmp_path, monkeypatch):
+    monkeypatch.setattr(services, "UPLOAD_DIR", tmp_path / "uploads")
+    monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
+
+    with pytest.raises(services.ServiceValidationError, match="Passphrase is required."):
+        services.decode_image(
+            architecture="basic",
+            filename="encoded.png",
+            contents=make_png_bytes(),
+            passphrase="   ",
+        )
+
+
+def test_decode_image_rejects_short_passphrase(tmp_path, monkeypatch):
+    monkeypatch.setattr(services, "UPLOAD_DIR", tmp_path / "uploads")
+    monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
+
+    with pytest.raises(services.ServiceValidationError, match="Passphrase must be at least 12 characters."):
+        services.decode_image(
+            architecture="basic",
+            filename="encoded.png",
+            contents=make_png_bytes(),
+            passphrase="too-short",
+        )
 
 
 def test_decode_image_returns_controlled_negative_result(tmp_path, monkeypatch):
@@ -223,11 +322,31 @@ def test_decode_image_returns_controlled_negative_result(tmp_path, monkeypatch):
         architecture="basic",
         filename="encoded.png",
         contents=make_png_bytes(),
+        passphrase="correct horse battery staple",
     )
 
     assert result["ok"] is False
     assert result["architecture"] == "basic"
     assert "No hidden message" in result["message"]
+    assert not list((tmp_path / "uploads").glob("*"))
+
+
+def test_decode_image_rejects_legacy_payload(tmp_path, monkeypatch):
+    monkeypatch.setattr(services, "UPLOAD_DIR", tmp_path / "uploads")
+    monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
+
+    model = MagicMock()
+    model.decode.return_value = "legacy-text"
+    monkeypatch.setattr(services, "get_model", MagicMock(return_value=model))
+
+    with pytest.raises(services.ServiceValidationError, match="Unsupported encrypted payload."):
+        services.decode_image(
+            architecture="basic",
+            filename="encoded.png",
+            contents=make_png_bytes(),
+            passphrase="correct horse battery staple",
+        )
+
     assert not list((tmp_path / "uploads").glob("*"))
 
 
@@ -244,30 +363,24 @@ def test_decode_image_raises_processing_error_for_unexpected_value_error(tmp_pat
             architecture="basic",
             filename="encoded.png",
             contents=make_png_bytes(),
+            passphrase="correct horse battery staple",
         )
 
     assert not list((tmp_path / "uploads").glob("*"))
 
 
-def test_check_image_is_true_only_when_decode_succeeds(tmp_path, monkeypatch):
+def test_check_image_is_true_for_supported_encrypted_payload(tmp_path, monkeypatch):
     monkeypatch.setattr(services, "UPLOAD_DIR", tmp_path / "uploads")
     monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
 
-    mock_decode = MagicMock(side_effect=[
-        {"ok": True, "message": "secret", "architecture": "dense"},
-        {"ok": False, "message": "No hidden message found.", "architecture": "dense"},
-    ])
-    monkeypatch.setattr(services, "decode_image", mock_decode)
+    model = MagicMock()
+    model.decode.return_value = services._encrypt_message("secret", "correct horse battery staple")
+    monkeypatch.setattr(services, "get_model", MagicMock(return_value=model))
 
     found = services.check_image(
         architecture="dense",
         filename="encoded.png",
         contents=make_png_bytes(),
-    )
-    missing = services.check_image(
-        architecture="dense",
-        filename="plain.png",
-        contents=make_png_bytes(color=(0, 0, 0)),
     )
 
     assert found == {
@@ -276,7 +389,45 @@ def test_check_image_is_true_only_when_decode_succeeds(tmp_path, monkeypatch):
         "message": "Hidden data found.",
         "architecture": "dense",
     }
-    assert missing == {
+
+
+def test_check_image_is_false_for_legacy_payload(tmp_path, monkeypatch):
+    monkeypatch.setattr(services, "UPLOAD_DIR", tmp_path / "uploads")
+    monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
+
+    model = MagicMock()
+    model.decode.return_value = "legacy-text"
+    monkeypatch.setattr(services, "get_model", MagicMock(return_value=model))
+
+    result = services.check_image(
+        architecture="dense",
+        filename="plain.png",
+        contents=make_png_bytes(color=(0, 0, 0)),
+    )
+
+    assert result == {
+        "ok": True,
+        "hidden_data": False,
+        "message": "No hidden data found.",
+        "architecture": "dense",
+    }
+
+
+def test_check_image_is_false_when_model_finds_no_message(tmp_path, monkeypatch):
+    monkeypatch.setattr(services, "UPLOAD_DIR", tmp_path / "uploads")
+    monkeypatch.setattr(services, "OUTPUT_DIR", tmp_path / "outputs")
+
+    model = MagicMock()
+    model.decode.side_effect = ValueError("Failed to find message.")
+    monkeypatch.setattr(services, "get_model", MagicMock(return_value=model))
+
+    result = services.check_image(
+        architecture="dense",
+        filename="plain.png",
+        contents=make_png_bytes(color=(0, 0, 0)),
+    )
+
+    assert result == {
         "ok": True,
         "hidden_data": False,
         "message": "No hidden data found.",
@@ -332,12 +483,14 @@ def test_encode_image_generates_unique_output_ids(tmp_path, monkeypatch):
         filename="cover.png",
         contents=make_png_bytes(),
         message="first secret",
+        passphrase="correct horse battery staple",
     )
     second = services.encode_image(
         architecture="dense",
         filename="cover.png",
         contents=make_png_bytes(),
         message="second secret",
+        passphrase="correct horse battery staple",
     )
 
     assert first["output_id"] != second["output_id"]
@@ -372,6 +525,7 @@ def test_encode_image_removes_expired_outputs_before_creating_new_one(tmp_path, 
         filename="cover.png",
         contents=make_png_bytes(),
         message="secret message",
+        passphrase="correct horse battery staple",
     )
 
     assert not stale_output.exists()

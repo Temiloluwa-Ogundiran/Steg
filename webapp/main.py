@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from webapp import services
+from webapp.config import PASSPHRASE_MIN_LENGTH
 from webapp.config import (
     APP_DESCRIPTION,
     APP_TITLE,
@@ -40,9 +41,17 @@ def favicon():
 async def encode_image(
     image: UploadFile = File(...),
     message: str = Form(...),
+    passphrase: str | None = Form(None),
 ):
     if not message or not message.strip():
         raise HTTPException(status_code=400, detail="Message is required for encoding.")
+    if not passphrase or not passphrase.strip():
+        raise HTTPException(status_code=400, detail="Passphrase is required for encoding.")
+    if len(passphrase.strip()) < PASSPHRASE_MIN_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Passphrase must be at least {PASSPHRASE_MIN_LENGTH} characters for encoding.",
+        )
 
     try:
         return services.encode_image(
@@ -50,6 +59,7 @@ async def encode_image(
             filename=image.filename or "image.png",
             upload=image,
             message=message,
+            passphrase=passphrase,
         )
     except services.ServiceValidationError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
@@ -62,12 +72,22 @@ async def encode_image(
 @app.post("/api/decode")
 async def decode_image(
     image: UploadFile = File(...),
+    passphrase: str | None = Form(None),
 ):
+    if not passphrase or not passphrase.strip():
+        raise HTTPException(status_code=400, detail="Passphrase is required for decoding.")
+    if len(passphrase.strip()) < PASSPHRASE_MIN_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Passphrase must be at least {PASSPHRASE_MIN_LENGTH} characters for decoding.",
+        )
+
     try:
         return services.decode_image(
             architecture=DEFAULT_ARCHITECTURE,
             filename=image.filename or "image.png",
             upload=image,
+            passphrase=passphrase,
         )
     except services.ServiceValidationError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error

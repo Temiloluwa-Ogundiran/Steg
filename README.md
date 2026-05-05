@@ -7,9 +7,10 @@ Under the hood, the app uses the original `steganogan` package in this repositor
 ## Features
 
 - Encode a message into an image
+- Protect every hidden message with a user-provided passphrase
 - Download the generated encoded image
-- Decode hidden text from an image
-- Check whether an image contains recoverable hidden data
+- Decode hidden text from an image with the correct passphrase
+- Check whether an image contains a supported encrypted Steg payload without the passphrase
 - Poster-style web interface built with FastAPI, Jinja templates, CSS, and vanilla JavaScript
 - Dense architecture fixed as the default processing model in the web app
 - Upload normalization and automatic resizing for oversized images
@@ -68,27 +69,33 @@ docker run --rm -p 8000:8000 -e WEB_CONCURRENCY=1 -e TIMEOUT=180 steg
 
 1. Upload a source image.
 2. Enter the message you want to hide.
-3. Submit the form.
-4. Download the generated encoded image from the result panel.
+3. Enter a passphrase that is at least `12` characters long.
+4. Submit the form.
+5. Download the generated encoded image from the result panel.
 
 ### Decode
 
 1. Upload an image that may contain hidden data.
-2. Submit the form.
-3. Read the recovered message if decoding succeeds.
+2. Enter the same passphrase used during encoding.
+3. Submit the form.
+4. Read the recovered message if decoding succeeds.
 
 ### Check
 
 1. Upload an image.
 2. Submit the form.
-3. Steg will report whether recoverable hidden data was found.
+3. Steg will report whether a supported encrypted Steg payload was found.
 
 ## Web App Notes
 
 - The web app uses the `dense` architecture for all encode, decode, and check operations.
+- Encode and decode require a user-provided passphrase.
+- Passphrases must be at least `12` characters long.
+- `CHECK` does not require the passphrase and only detects the Steg encrypted payload format.
 - Uploaded images are normalized to RGB and resized if their longest side exceeds `2048px`.
 - Generated outputs are stored temporarily and are cleaned up automatically after a short retention window.
 - The app currently runs model inference on the server process, so very large or frequent requests may still be compute-heavy.
+- If the passphrase is lost, the hidden message cannot be recovered.
 
 ## Project Structure
 
@@ -161,7 +168,8 @@ The actual steganography logic comes from [steganogan/models.py](/C:/Users/USER/
 ## Limitations
 
 - The web app is currently fixed to the `dense` model architecture.
-- The decode and check paths still rely on the upstream library's decode-failure behavior.
+- The web app only supports the new passphrase-protected Steg payload format and does not decode legacy plaintext payloads.
+- The decode and check paths still rely on the upstream library's decode-failure behavior for plain images with no hidden message.
 - The original project has older package constraints and research-oriented training code that may need modernization for newer Python and PyTorch stacks.
 
 ## License

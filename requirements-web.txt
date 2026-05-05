@@ -11,5 +11,6 @@ scipy>=1.11,<2.0
 imageio>=2.34,<3.0
 reedsolo==0.3
 tqdm>=4.66,<5.0
+cryptography>=46.0,<47.0
 torch==2.11.0+cpu
 torchvision==0.26.0+cpu

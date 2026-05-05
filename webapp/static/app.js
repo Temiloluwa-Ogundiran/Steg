@@ -121,6 +121,20 @@ async function handleSubmit(event) {
     return;
   }
 
+  if (kind !== "check" && !String(payload.get("passphrase") || "").trim()) {
+    renderError(kind === "encode"
+      ? "A passphrase is required before encoding can begin."
+      : "A passphrase is required before decoding can begin.");
+    return;
+  }
+
+  if (kind !== "check" && String(payload.get("passphrase") || "").trim().length < 12) {
+    renderError(kind === "encode"
+      ? "The passphrase must be at least 12 characters before encoding can begin."
+      : "The passphrase must be at least 12 characters before decoding can begin.");
+    return;
+  }
+
   setSubmitting(form, true);
   renderResult(
     `

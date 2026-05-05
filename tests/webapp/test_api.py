@@ -26,7 +26,7 @@ def test_encode_endpoint_returns_json_payload(client, monkeypatch):
 
     response = client.post(
         "/api/encode",
-        data={"message": "secret message"},
+        data={"message": "secret message", "passphrase": "correct horse battery staple"},
         files={"image": ("cover.png", PNG_BYTES, "image/png")},
     )
 
@@ -42,6 +42,7 @@ def test_encode_endpoint_returns_json_payload(client, monkeypatch):
     assert kwargs["architecture"] == "dense"
     assert kwargs["filename"] == "cover.png"
     assert kwargs["message"] == "secret message"
+    assert kwargs["passphrase"] == "correct horse battery staple"
     assert hasattr(kwargs["upload"], "filename")
     assert kwargs["upload"].filename == "cover.png"
     assert hasattr(kwargs["upload"], "file")
@@ -59,6 +60,7 @@ def test_decode_endpoint_returns_json_payload(client, monkeypatch):
 
     response = client.post(
         "/api/decode",
+        data={"passphrase": "correct horse battery staple"},
         files={"image": ("encoded.png", PNG_BYTES, "image/png")},
     )
 
@@ -71,6 +73,7 @@ def test_decode_endpoint_returns_json_payload(client, monkeypatch):
     _, kwargs = decode_image.call_args
     assert kwargs["architecture"] == "dense"
     assert kwargs["filename"] == "encoded.png"
+    assert kwargs["passphrase"] == "correct horse battery staple"
     assert hasattr(kwargs["upload"], "filename")
     assert kwargs["upload"].filename == "encoded.png"
     assert hasattr(kwargs["upload"], "file")
@@ -128,7 +131,7 @@ def test_encode_endpoint_translates_validation_errors_to_400(client, monkeypatch
 
     response = client.post(
         "/api/encode",
-        data={"message": "secret message"},
+        data={"message": "secret message", "passphrase": "correct horse battery staple"},
         files={"image": ("cover.png", PNG_BYTES, "image/png")},
     )
 
@@ -142,6 +145,7 @@ def test_decode_endpoint_translates_processing_errors_to_500(client, monkeypatch
 
     response = client.post(
         "/api/decode",
+        data={"passphrase": "correct horse battery staple"},
         files={"image": ("encoded.png", PNG_BYTES, "image/png")},
     )
 
@@ -157,3 +161,68 @@ def test_download_endpoint_returns_404_for_missing_output(client, monkeypatch):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Missing output."}
+
+
+def test_encode_endpoint_rejects_missing_passphrase(client):
+    response = client.post(
+        "/api/encode",
+        data={"message": "secret message", "passphrase": "   "},
+        files={"image": ("cover.png", PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Passphrase is required for encoding."}
+
+
+def test_encode_endpoint_rejects_short_passphrase(client):
+    response = client.post(
+        "/api/encode",
+        data={"message": "secret message", "passphrase": "too-short"},
+        files={"image": ("cover.png", PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Passphrase must be at least 12 characters for encoding."}
+
+
+def test_encode_endpoint_rejects_omitted_passphrase(client):
+    response = client.post(
+        "/api/encode",
+        data={"message": "secret message"},
+        files={"image": ("cover.png", PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Passphrase is required for encoding."}
+
+
+def test_decode_endpoint_rejects_missing_passphrase(client):
+    response = client.post(
+        "/api/decode",
+        data={"passphrase": "   "},
+        files={"image": ("encoded.png", PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Passphrase is required for decoding."}
+
+
+def test_decode_endpoint_rejects_short_passphrase(client):
+    response = client.post(
+        "/api/decode",
+        data={"passphrase": "too-short"},
+        files={"image": ("encoded.png", PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Passphrase must be at least 12 characters for decoding."}
+
+
+def test_decode_endpoint_rejects_omitted_passphrase(client):
+    response = client.post(
+        "/api/decode",
+        files={"image": ("encoded.png", PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Passphrase is required for decoding."}

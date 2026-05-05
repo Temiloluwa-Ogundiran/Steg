@@ -28,8 +28,9 @@
             <p class="eyebrow">ACTIVE TOOL</p>
             <h1>Hide Signal. <span>Reveal Truth.</span></h1>
             <p class="lede">
-              Encode, decode, and inspect images through a disciplined steganography workspace with direct access to all three pretrained architectures.
+              Encode, decode, and inspect images through a disciplined steganography workspace with passphrase-protected payloads.
             </p>
+            <p class="form-copy">If the passphrase is lost, the hidden message cannot be recovered.</p>
 
             <div class="mode-switcher" role="tablist" aria-label="Steg modes">
               <button
@@ -100,6 +101,11 @@
                       <textarea name="message" rows="6" placeholder="Enter the hidden payload." required></textarea>
                     </label>
 
+                    <label class="field">
+                      <span class="field__label">PASSPHRASE</span>
+                      <input type="password" name="passphrase" minlength="12" placeholder="Enter the encryption passphrase." required>
+                    </label>
+
                     <button type="submit" class="poster-button">ENCODE IMAGE</button>
                   </form>
                 </section>
@@ -128,6 +134,11 @@
                         <div class="field__static">{{ default_architecture|upper }}</div>
                       </div>
                     </div>
+
+                    <label class="field">
+                      <span class="field__label">PASSPHRASE</span>
+                      <input type="password" name="passphrase" minlength="12" placeholder="Enter the decryption passphrase." required>
+                    </label>
 
                     <button type="submit" class="poster-button poster-button--dark">DECODE IMAGE</button>
                   </form>

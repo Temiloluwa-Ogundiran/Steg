@@ -1,16 +1,36 @@
+from base64 import b64decode, urlsafe_b64encode
+from binascii import Error as BinasciiError
 from functools import lru_cache
 from io import BytesIO
+from os import urandom
 from pathlib import Path
 from time import time
 from uuid import uuid4
 
+from cryptography.exceptions import InvalidTag
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from PIL import Image, UnidentifiedImageError
 
 from steganogan import SteganoGAN
-from webapp.config import MAX_IMAGE_DIMENSION, OUTPUT_DIR, OUTPUT_RETENTION_SECONDS, UPLOAD_DIR
+from webapp.config import (
+    ENCRYPTED_PAYLOAD_PREFIX,
+    ENCRYPTION_NONCE_BYTES,
+    KDF_SALT_BYTES,
+    MAX_IMAGE_DIMENSION,
+    OUTPUT_DIR,
+    OUTPUT_RETENTION_SECONDS,
+    PASSPHRASE_MIN_LENGTH,
+    UPLOAD_DIR,
+)
 
 SUPPORTED_ARCHITECTURES = ("basic", "dense", "residual")
 EXPECTED_DECODE_FAILURE_MESSAGE = "Failed to find message."
+DERIVED_KEY_BYTES = 32
+PAYLOAD_SEGMENT_COUNT = 3
+SCRYPT_COST = 2 ** 14
+SCRYPT_BLOCK_SIZE = 8
+SCRYPT_PARALLELIZATION = 1
 
 try:
     _RESAMPLE_FILTER = Image.Resampling.LANCZOS
@@ -28,6 +48,98 @@ class OutputNotFoundError(FileNotFoundError):
 
 class ProcessingError(RuntimeError):
     """Raised when model processing fails unexpectedly."""
+
+
+def _urlsafe_b64encode_bytes(value):
+    return urlsafe_b64encode(value).decode("ascii").rstrip("=")
+
+
+def _urlsafe_b64decode_text(value):
+    padding = "=" * (-len(value) % 4)
+    return b64decode(value + padding, altchars=b"-_", validate=True)
+
+
+def _validate_passphrase(passphrase):
+    candidate = (passphrase or "").strip()
+    if not candidate:
+        raise ServiceValidationError("Passphrase is required.")
+    if len(candidate) < PASSPHRASE_MIN_LENGTH:
+        raise ServiceValidationError(
+            f"Passphrase must be at least {PASSPHRASE_MIN_LENGTH} characters."
+        )
+
+    return candidate
+
+
+def _derive_key(passphrase, salt):
+    kdf = Scrypt(
+        salt=salt,
+        length=DERIVED_KEY_BYTES,
+        n=SCRYPT_COST,
+        r=SCRYPT_BLOCK_SIZE,
+        p=SCRYPT_PARALLELIZATION,
+    )
+    return kdf.derive(passphrase.encode("utf-8"))
+
+
+def _is_supported_payload(payload):
+    candidate = (payload or "").strip()
+    if not candidate.startswith(ENCRYPTED_PAYLOAD_PREFIX):
+        return False
+
+    segments = candidate[len(ENCRYPTED_PAYLOAD_PREFIX):].split(".")
+    if len(segments) != PAYLOAD_SEGMENT_COUNT or not all(segments):
+        return False
+
+    try:
+        salt, nonce, ciphertext = [_urlsafe_b64decode_text(segment) for segment in segments]
+    except (BinasciiError, ValueError, TypeError):
+        return False
+
+    return (
+        len(salt) == KDF_SALT_BYTES
+        and len(nonce) == ENCRYPTION_NONCE_BYTES
+        and len(ciphertext) > 0
+    )
+
+
+def _encrypt_message(message, passphrase):
+    validated_passphrase = _validate_passphrase(passphrase)
+    salt = urandom(KDF_SALT_BYTES)
+    nonce = urandom(ENCRYPTION_NONCE_BYTES)
+    key = _derive_key(validated_passphrase, salt)
+    ciphertext = AESGCM(key).encrypt(nonce, message.encode("utf-8"), None)
+    segments = (
+        _urlsafe_b64encode_bytes(salt),
+        _urlsafe_b64encode_bytes(nonce),
+        _urlsafe_b64encode_bytes(ciphertext),
+    )
+    return f"{ENCRYPTED_PAYLOAD_PREFIX}{'.'.join(segments)}"
+
+
+def _parse_encrypted_payload(payload):
+    if not _is_supported_payload(payload):
+        raise ServiceValidationError("Invalid passphrase or corrupted payload.")
+
+    encoded_segments = payload[len(ENCRYPTED_PAYLOAD_PREFIX):].split(".")
+    try:
+        salt, nonce, ciphertext = [_urlsafe_b64decode_text(segment) for segment in encoded_segments]
+    except (BinasciiError, ValueError, TypeError):
+        raise ServiceValidationError("Invalid passphrase or corrupted payload.") from None
+
+    return salt, nonce, ciphertext
+
+
+def _decrypt_message(payload, passphrase):
+    validated_passphrase = _validate_passphrase(passphrase)
+    salt, nonce, ciphertext = _parse_encrypted_payload(payload)
+
+    try:
+        key = _derive_key(validated_passphrase, salt)
+        plaintext = AESGCM(key).decrypt(nonce, ciphertext, None)
+        return plaintext.decode("utf-8")
+    except (InvalidTag, ValueError, TypeError, UnicodeDecodeError):
+        raise ServiceValidationError("Invalid passphrase or corrupted payload.") from None
 
 
 def _ensure_runtime_dirs():
@@ -106,11 +218,42 @@ def get_model(architecture):
     return _load_model(normalized)
 
 
-def encode_image(*, architecture, filename=None, upload=None, contents=None, message):
+def _extract_hidden_payload(*, architecture, filename=None, upload=None, contents=None):
+    normalized = _normalize_architecture(architecture)
+    input_path = None
+
+    try:
+        input_path = _write_upload(upload=upload, contents=contents, filename=filename)
+        model = get_model(normalized)
+        payload = model.decode(str(input_path))
+    except ValueError as error:
+        if str(error) == EXPECTED_DECODE_FAILURE_MESSAGE:
+            return {
+                "ok": False,
+                "payload": None,
+                "architecture": normalized,
+            }
+        raise ProcessingError("Decoding failed.") from error
+    except ProcessingError:
+        raise
+    except Exception as error:
+        raise ProcessingError("Decoding failed.") from error
+    finally:
+        _remove_path(input_path)
+
+    return {
+        "ok": True,
+        "payload": payload,
+        "architecture": normalized,
+    }
+
+
+def encode_image(*, architecture, filename=None, upload=None, contents=None, message, passphrase):
     normalized = _normalize_architecture(architecture)
     if not message or not message.strip():
         raise ServiceValidationError("Message is required for encoding.")
 
+    validated_passphrase = _validate_passphrase(passphrase)
     _cleanup_expired_outputs()
     input_path = None
     output_id = uuid4().hex
@@ -119,7 +262,8 @@ def encode_image(*, architecture, filename=None, upload=None, contents=None, mes
     try:
         input_path = _write_upload(upload=upload, contents=contents, filename=filename)
         model = get_model(normalized)
-        model.encode(str(input_path), str(output_path), message.strip())
+        encrypted_payload = _encrypt_message(message.strip(), validated_passphrase)
+        model.encode(str(input_path), str(output_path), encrypted_payload)
         if not output_path.exists():
             raise ProcessingError("Encoded output was not generated.")
     except ServiceValidationError:
@@ -140,46 +284,41 @@ def encode_image(*, architecture, filename=None, upload=None, contents=None, mes
     }
 
 
-def decode_image(*, architecture, filename=None, upload=None, contents=None):
-    normalized = _normalize_architecture(architecture)
-    input_path = None
-
-    try:
-        input_path = _write_upload(upload=upload, contents=contents, filename=filename)
-        model = get_model(normalized)
-        message = model.decode(str(input_path))
-    except ValueError as error:
-        if str(error) == EXPECTED_DECODE_FAILURE_MESSAGE:
-            result = {
-                "ok": False,
-                "message": "No hidden message found.",
-                "architecture": normalized,
-            }
-            return result
-        raise ProcessingError("Decoding failed.") from error
-    except ProcessingError:
-        raise
-    except Exception as error:
-        raise ProcessingError("Decoding failed.") from error
-    finally:
-        _remove_path(input_path)
-
-    return {
-        "ok": True,
-        "message": message,
-        "architecture": normalized,
-    }
-
-
-def check_image(*, architecture, filename=None, upload=None, contents=None):
-    decoded = decode_image(
+def decode_image(*, architecture, filename=None, upload=None, contents=None, passphrase):
+    validated_passphrase = _validate_passphrase(passphrase)
+    decoded = _extract_hidden_payload(
         architecture=architecture,
         filename=filename,
         upload=upload,
         contents=contents,
     )
 
-    if decoded["ok"]:
+    if not decoded["ok"]:
+        return {
+            "ok": False,
+            "message": "No hidden message found.",
+            "architecture": decoded["architecture"],
+        }
+
+    if not _is_supported_payload(decoded["payload"]):
+        raise ServiceValidationError("Unsupported encrypted payload.")
+
+    return {
+        "ok": True,
+        "message": _decrypt_message(decoded["payload"], validated_passphrase),
+        "architecture": decoded["architecture"],
+    }
+
+
+def check_image(*, architecture, filename=None, upload=None, contents=None):
+    decoded = _extract_hidden_payload(
+        architecture=architecture,
+        filename=filename,
+        upload=upload,
+        contents=contents,
+    )
+
+    if decoded["ok"] and _is_supported_payload(decoded["payload"]):
         return {
             "ok": True,
             "hidden_data": True,
