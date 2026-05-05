@@ -1,6 +1,6 @@
 const modeButtons = document.querySelectorAll("[data-mode-target]");
 const modePanels = document.querySelectorAll("[data-mode-panel]");
-const resultPanel = document.getElementById("result-panel");
+const terminalBody = document.getElementById("terminal-body");
 const forms = document.querySelectorAll(".tool-form");
 
 document.documentElement.dataset.stegReady = "true";
@@ -19,11 +19,6 @@ function setActiveMode(nextMode) {
   });
 }
 
-function renderResult(markup, state) {
-  resultPanel.dataset.state = state;
-  resultPanel.innerHTML = markup;
-}
-
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -33,80 +28,98 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
+function renderTerminal(lines) {
+  const markup = lines.map((line, index) => {
+    const num = String(index + 1).padStart(2, "0");
+    const content = line.content || "";
+    const typeClass = line.type ? `is-${line.type}` : "";
+    return `
+      <div class="terminal__line">
+        <span class="terminal__line-num">${num}</span>
+        <span class="terminal__line-content ${typeClass}">${content}</span>
+      </div>
+    `;
+  }).join("");
+
+  terminalBody.innerHTML = markup;
+}
+
+function renderIdle() {
+  renderTerminal([
+    { content: "// Awaiting input...", type: "comment" },
+    { content: "" },
+    { content: "Select mode and submit.", type: "comment" },
+  ]);
+}
+
+function renderProcessing(kind) {
+  renderTerminal([
+    { content: "> Processing request...", type: "prompt" },
+    { content: "" },
+    { content: `mode: "${kind}"`, type: "variable" },
+    { content: 'architecture: "dense"', type: "variable" },
+  ]);
+}
+
 function renderError(message) {
-  renderResult(
-    `
-      <p class="result-panel__kicker">ERROR</p>
-      <h2 class="result-panel__headline">Processing halted.</h2>
-      <p class="result-panel__copy">${escapeHtml(message)}</p>
-    `,
-    "error",
-  );
+  renderTerminal([
+    { content: "ERROR Processing halted.", type: "keyword" },
+    { content: "" },
+    { content: escapeHtml(message), type: "error" },
+  ]);
+}
+
+function renderEncodeResult(data) {
+  const lines = [
+    { content: "STATUS ok", type: "success" },
+    { content: `download_url: "${escapeHtml(data.download_url)}"`, type: "variable" },
+    { content: `filename: "${escapeHtml(data.filename)}"`, type: "variable" },
+    { content: "" },
+    { content: `<img class="terminal__preview" src="${escapeHtml(data.download_url)}" alt="Encoded image preview">`, type: "" },
+    { content: "" },
+    { content: `<div class="terminal__actions"><a class="terminal__link" href="${escapeHtml(data.download_url)}" download="${escapeHtml(data.filename)}">DOWNLOAD &gt;</a></div>`, type: "" },
+  ];
+  renderTerminal(lines);
 }
 
 function renderDecodeResult(data) {
   if (data.ok) {
-    renderResult(
-      `
-        <p class="result-panel__kicker">DECODED MESSAGE</p>
-        <h2 class="result-panel__headline">Message recovered.</h2>
-        <p class="result-panel__message">${escapeHtml(data.message)}</p>
-      `,
-      "success",
-    );
+    renderTerminal([
+      { content: "STATUS ok", type: "success" },
+      { content: `message: "${escapeHtml(data.message)}"`, type: "string" },
+      { content: 'architecture: "dense"', type: "variable" },
+    ]);
     return;
   }
 
-  renderResult(
-    `
-      <p class="result-panel__kicker">NO MESSAGE</p>
-      <h2 class="result-panel__headline">Nothing recovered.</h2>
-      <p class="result-panel__copy">${escapeHtml(data.message)}</p>
-    `,
-    "missing",
-  );
+  renderTerminal([
+    { content: "STATUS no_message", type: "keyword" },
+    { content: "" },
+    { content: escapeHtml(data.message || "No hidden message found."), type: "comment" },
+  ]);
 }
 
 function renderCheckResult(data) {
-  const state = data.hidden_data ? "found" : "missing";
-  const headline = data.hidden_data ? "Hidden data found." : "No hidden data found.";
-  renderResult(
-    `
-      <p class="result-panel__kicker">STRICT CHECK</p>
-      <h2 class="result-panel__headline">${headline}</h2>
-      <p class="result-panel__copy">${escapeHtml(data.message)}</p>
-    `,
-    state,
-  );
-}
+  const statusType = data.hidden_data ? "success" : "comment";
+  const statusText = data.hidden_data ? "true" : "false";
 
-function renderEncodeResult(data) {
-  renderResult(
-    `
-      <p class="result-panel__kicker">ENCODE COMPLETE</p>
-      <h2 class="result-panel__headline">Output generated.</h2>
-      <img class="result-panel__preview" src="${data.download_url}" alt="Encoded image preview">
-      <p class="result-panel__copy">The encoded image is ready for inspection or download.</p>
-      <div class="result-panel__actions">
-        <a class="result-link" href="${data.download_url}" download="${escapeHtml(data.filename)}">Download image</a>
-      </div>
-    `,
-    "success",
-  );
+  renderTerminal([
+    { content: "STATUS ok", type: "success" },
+    { content: `hidden_data: ${statusText}`, type: statusType },
+    { content: 'architecture: "dense"', type: "variable" },
+  ]);
 }
 
 function setSubmitting(form, isSubmitting) {
   const button = form.querySelector('button[type="submit"]');
-  if (!button) {
-    return;
-  }
+  if (!button) return;
 
   if (!button.dataset.defaultText) {
     button.dataset.defaultText = button.textContent;
   }
 
   button.disabled = isSubmitting;
-  button.textContent = isSubmitting ? "Processing..." : button.dataset.defaultText;
+  button.textContent = isSubmitting ? "PROCESSING..." : button.dataset.defaultText;
 }
 
 async function handleSubmit(event) {
@@ -136,14 +149,7 @@ async function handleSubmit(event) {
   }
 
   setSubmitting(form, true);
-  renderResult(
-    `
-      <p class="result-panel__kicker">WORKING</p>
-      <h2 class="result-panel__headline">Processing request.</h2>
-      <p class="result-panel__copy">The selected image and architecture are being evaluated now.</p>
-    `,
-    "idle",
-  );
+  renderProcessing(kind);
 
   try {
     const response = await fetch(endpoint, {
@@ -172,12 +178,27 @@ async function handleSubmit(event) {
 }
 
 function updateFileLabel(input) {
-  const meta = input.closest(".field")?.querySelector("[data-file-name]");
-  if (!meta) {
-    return;
+  const field = input.closest(".field");
+  if (!field) return;
+
+  const nameEl = field.querySelector("[data-file-name]");
+  const dimsEl = field.querySelector("[data-file-dims]");
+  const file = input.files?.[0];
+
+  if (nameEl) {
+    nameEl.textContent = file?.name || "Awaiting image";
+    nameEl.style.color = file ? "var(--text-body)" : "var(--text-muted)";
   }
 
-  meta.textContent = input.files?.[0]?.name || "Awaiting image";
+  if (dimsEl && file) {
+    const img = new Image();
+    img.onload = () => {
+      dimsEl.textContent = `${img.naturalWidth}x${img.naturalHeight} PX`;
+    };
+    img.src = URL.createObjectURL(file);
+  } else if (dimsEl) {
+    dimsEl.textContent = "";
+  }
 }
 
 modeButtons.forEach((button) => {
@@ -190,5 +211,14 @@ forms.forEach((form) => {
   const fileInput = form.querySelector('input[type="file"]');
   if (fileInput) {
     fileInput.addEventListener("change", () => updateFileLabel(fileInput));
+  }
+
+  const field = form.querySelector(".field");
+  if (field) {
+    field.addEventListener("click", (e) => {
+      if (e.target.closest('input[type="file"]')) return;
+      const input = field.querySelector('input[type="file"]');
+      if (input) input.click();
+    });
   }
 });

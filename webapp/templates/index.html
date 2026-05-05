@@ -4,190 +4,171 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ app_title }}</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23E3E2DE'/%3E%3Crect x='14' y='14' width='36' height='36' fill='%231351AA'/%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23111111'/%3E%3Crect x='20' y='20' width='24' height='24' fill='%23FFFFFF'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
     <script defer src="{{ url_for('static', path='app.js') }}"></script>
   </head>
   <body>
     <div class="page-shell">
       <header class="topbar">
-        <div class="brand">STEG</div>
-        <div class="status">SYSTEM V{{ app_version }}</div>
-        <div class="topbar-spacer" aria-hidden="true"></div>
+        <div class="topbar__pulse" aria-hidden="true"></div>
+        <div class="topbar__version">{{ app_title|upper }} {{ app_version }} [BUILD 001]</div>
+        <div class="topbar__status">// SYSTEM READY</div>
       </header>
 
-      <main class="workspace">
-        <section class="surface-grid hero-band">
-          <aside class="sidebar">
-            <div class="sidebar-label">WORKSPACE</div>
-            <div class="sidebar-marker"></div>
-            <div class="sidebar-label sidebar-label--lower">MODE</div>
-          </aside>
+      <div class="workspace">
+        <main class="main-stage">
+          <div class="brand">
+            <h1 class="brand__title">{{ app_title }}</h1>
+            <p class="brand__sub">// Hide signal. Reveal truth.</p>
+          </div>
 
-          <section class="hero">
-            <p class="eyebrow">ACTIVE TOOL</p>
-            <h1>Hide Signal. <span>Reveal Truth.</span></h1>
-            <p class="lede">
-              Encode, decode, and inspect images through a disciplined steganography workspace with passphrase-protected payloads.
-            </p>
-            <p class="form-copy">If the passphrase is lost, the hidden message cannot be recovered.</p>
-
-            <div class="mode-switcher" role="tablist" aria-label="Steg modes">
+          <section class="section">
+            <div class="section__label">01 // MODE</div>
+            <div class="mode-grid" role="tablist" aria-label="Steg modes">
               <button
                 type="button"
-                class="mode-switcher__button is-active"
+                class="mode-grid__button is-active"
                 data-mode-target="encode"
                 aria-selected="true"
               >
-                ENCODE
+                Encode
               </button>
               <button
                 type="button"
-                class="mode-switcher__button"
+                class="mode-grid__button"
                 data-mode-target="decode"
                 aria-selected="false"
               >
-                DECODE
+                Decode
               </button>
               <button
                 type="button"
-                class="mode-switcher__button"
+                class="mode-grid__button"
                 data-mode-target="check"
                 aria-selected="false"
               >
-                CHECK
+                Check
               </button>
             </div>
           </section>
-        </section>
 
-        <section class="surface-grid tool-band">
-          <aside class="sidebar sidebar--tools">
-            <div class="sidebar-label">INPUT</div>
-            <div class="sidebar-label sidebar-label--lower">PAYLOAD</div>
-            <div class="sidebar-label sidebar-label--lower">RESULT</div>
-          </aside>
+          <section class="mode-panel is-active" data-mode-panel="encode">
+            <form
+              id="encode-form"
+              class="tool-form"
+              data-api-endpoint="/api/encode"
+              data-result-kind="encode"
+            >
+              <section class="section">
+                <div class="section__label">02 // INPUT</div>
+                <label class="field" for="encode-file">
+                  <span class="field__prefix">[FILE]</span>
+                  <span class="field__value" data-file-name>Awaiting image</span>
+                  <span class="field__meta" data-file-dims></span>
+                  <input id="encode-file" type="file" name="image" accept="image/*" required class="visually-hidden">
+                </label>
+              </section>
 
-          <section class="tool-stage">
-            <div class="tool-stage__grid">
-              <div class="tool-column">
-                <section class="mode-panel is-active" data-mode-panel="encode">
-                  <form
-                    id="encode-form"
-                    class="tool-form"
-                    data-api-endpoint="/api/encode"
-                    data-result-kind="encode"
-                  >
-                    <div class="form-header">
-                      <p class="form-label">ENCODE / IMAGE + TEXT</p>
-                      <p class="form-copy">Hide a message inside an image and prepare the output for download.</p>
-                    </div>
+              <section class="section">
+                <div class="section__label">03 // PAYLOAD</div>
+                <label class="field field--textarea">
+                  <textarea name="message" class="field__input" rows="4" placeholder="Enter hidden message." required></textarea>
+                </label>
+              </section>
 
-                    <div class="form-grid">
-                      <label class="field field--file">
-                        <span class="field__label">IMAGE</span>
-                        <input type="file" name="image" accept="image/*" required>
-                        <span class="field__meta" data-file-name>Awaiting image</span>
-                      </label>
+              <section class="section">
+                <div class="section__label">04 // KEY</div>
+                <label class="field field--textarea">
+                  <input type="password" name="passphrase" class="field__input" style="min-height:auto;" placeholder="Enter encryption passphrase." minlength="12" required>
+                </label>
+              </section>
 
-                      <div class="field">
-                        <span class="field__label">ARCHITECTURE</span>
-                        <div class="field__static">{{ default_architecture|upper }}</div>
-                      </div>
-                    </div>
-
-                    <label class="field field--message">
-                      <span class="field__label">MESSAGE</span>
-                      <textarea name="message" rows="6" placeholder="Enter the hidden payload." required></textarea>
-                    </label>
-
-                    <label class="field">
-                      <span class="field__label">PASSPHRASE</span>
-                      <input type="password" name="passphrase" minlength="12" placeholder="Enter the encryption passphrase." required>
-                    </label>
-
-                    <button type="submit" class="poster-button">ENCODE IMAGE</button>
-                  </form>
-                </section>
-
-                <section class="mode-panel" data-mode-panel="decode" hidden>
-                  <form
-                    id="decode-form"
-                    class="tool-form"
-                    data-api-endpoint="/api/decode"
-                    data-result-kind="decode"
-                  >
-                    <div class="form-header">
-                      <p class="form-label">DECODE / IMAGE</p>
-                      <p class="form-copy">Recover a hidden message from a candidate image using a selected model architecture.</p>
-                    </div>
-
-                    <div class="form-grid">
-                      <label class="field field--file">
-                        <span class="field__label">IMAGE</span>
-                        <input type="file" name="image" accept="image/*" required>
-                        <span class="field__meta" data-file-name>Awaiting image</span>
-                      </label>
-
-                      <div class="field">
-                        <span class="field__label">ARCHITECTURE</span>
-                        <div class="field__static">{{ default_architecture|upper }}</div>
-                      </div>
-                    </div>
-
-                    <label class="field">
-                      <span class="field__label">PASSPHRASE</span>
-                      <input type="password" name="passphrase" minlength="12" placeholder="Enter the decryption passphrase." required>
-                    </label>
-
-                    <button type="submit" class="poster-button poster-button--dark">DECODE IMAGE</button>
-                  </form>
-                </section>
-
-                <section class="mode-panel" data-mode-panel="check" hidden>
-                  <form
-                    id="check-form"
-                    class="tool-form"
-                    data-api-endpoint="/api/check"
-                    data-result-kind="check"
-                  >
-                    <div class="form-header">
-                      <p class="form-label">CHECK / IMAGE</p>
-                      <p class="form-copy">Run a strict presence check. An image only passes when a valid message can be recovered.</p>
-                    </div>
-
-                    <div class="form-grid">
-                      <label class="field field--file">
-                        <span class="field__label">IMAGE</span>
-                        <input type="file" name="image" accept="image/*" required>
-                        <span class="field__meta" data-file-name>Awaiting image</span>
-                      </label>
-
-                      <div class="field">
-                        <span class="field__label">ARCHITECTURE</span>
-                        <div class="field__static">{{ default_architecture|upper }}</div>
-                      </div>
-                    </div>
-
-                    <button type="submit" class="poster-button poster-button--dark">CHECK IMAGE</button>
-                  </form>
-                </section>
+              <div class="action-bar">
+                <button type="submit" class="poster-button">EXECUTE &gt;</button>
               </div>
-
-              <aside class="result-rail">
-                <p class="result-rail__label">RESULT</p>
-                <div id="result-panel" class="result-panel" data-state="idle">
-                  <p class="result-panel__kicker">READY</p>
-                  <h2 class="result-panel__headline">Select a mode and submit an image.</h2>
-                  <p class="result-panel__copy">
-                    The result rail will render encoded output, recovered text, or strict verification status here.
-                  </p>
-                </div>
-              </aside>
-            </div>
+            </form>
           </section>
-        </section>
-      </main>
+
+          <section class="mode-panel" data-mode-panel="decode" hidden>
+            <form
+              id="decode-form"
+              class="tool-form"
+              data-api-endpoint="/api/decode"
+              data-result-kind="decode"
+            >
+              <section class="section">
+                <div class="section__label">02 // INPUT</div>
+                <label class="field" for="decode-file">
+                  <span class="field__prefix">[FILE]</span>
+                  <span class="field__value" data-file-name>Awaiting image</span>
+                  <span class="field__meta" data-file-dims></span>
+                  <input id="decode-file" type="file" name="image" accept="image/*" required class="visually-hidden">
+                </label>
+              </section>
+
+              <section class="section">
+                <div class="section__label">04 // KEY</div>
+                <label class="field field--textarea">
+                  <input type="password" name="passphrase" class="field__input" style="min-height:auto;" placeholder="Enter decryption passphrase." minlength="12" required>
+                </label>
+              </section>
+
+              <div class="action-bar">
+                <button type="submit" class="poster-button">EXECUTE &gt;</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="mode-panel" data-mode-panel="check" hidden>
+            <form
+              id="check-form"
+              class="tool-form"
+              data-api-endpoint="/api/check"
+              data-result-kind="check"
+            >
+              <section class="section">
+                <div class="section__label">02 // INPUT</div>
+                <label class="field" for="check-file">
+                  <span class="field__prefix">[FILE]</span>
+                  <span class="field__value" data-file-name>Awaiting image</span>
+                  <span class="field__meta" data-file-dims></span>
+                  <input id="check-file" type="file" name="image" accept="image/*" required class="visually-hidden">
+                </label>
+              </section>
+
+              <div class="action-bar">
+                <button type="submit" class="poster-button">EXECUTE &gt;</button>
+              </div>
+            </form>
+          </section>
+        </main>
+
+        <aside class="terminal" aria-live="polite" aria-atomic="false">
+          <div class="terminal__header">
+            <span class="terminal__title">TERMINAL // :8000</span>
+            <span class="terminal__status"><span class="terminal__status-dot">●</span> LISTENING</span>
+          </div>
+          <div id="terminal-body" class="terminal__body">
+            <div class="terminal__line">
+              <span class="terminal__line-num">01</span>
+              <span class="terminal__line-content is-comment">// Awaiting input...</span>
+            </div>
+            <div class="terminal__line">
+              <span class="terminal__line-num">02</span>
+              <span class="terminal__line-content"></span>
+            </div>
+            <div class="terminal__line">
+              <span class="terminal__line-num">03</span>
+              <span class="terminal__line-content is-comment">Select mode and submit.</span>
+            </div>
+          </div>
+          <div class="terminal__footer">
+            <span>RAM: --%</span>
+            <span>CPU: --%</span>
+          </div>
+        </aside>
+      </div>
     </div>
   </body>
 </html>
