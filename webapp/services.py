@@ -2,6 +2,8 @@ from base64 import b64decode, urlsafe_b64encode
 from binascii import Error as BinasciiError
 from functools import lru_cache
 from io import BytesIO
+import os
+import warnings
 from os import urandom
 from pathlib import Path
 from time import time
@@ -11,6 +13,8 @@ from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from PIL import Image, UnidentifiedImageError
+import torch
+from torch.serialization import SourceChangeWarning
 
 from steganogan import SteganoGAN
 from webapp.config import (
@@ -31,6 +35,9 @@ PAYLOAD_SEGMENT_COUNT = 3
 SCRYPT_COST = 2 ** 14
 SCRYPT_BLOCK_SIZE = 8
 SCRYPT_PARALLELIZATION = 1
+_TORCH_CONFIGURED = False
+
+warnings.filterwarnings("ignore", category=SourceChangeWarning)
 
 try:
     _RESAMPLE_FILTER = Image.Resampling.LANCZOS
@@ -48,6 +55,36 @@ class OutputNotFoundError(FileNotFoundError):
 
 class ProcessingError(RuntimeError):
     """Raised when model processing fails unexpectedly."""
+
+
+def _env_int(name):
+    value = os.getenv(name)
+    if value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise RuntimeError(f"{name} must be an integer.") from exc
+
+
+def configure_torch():
+    global _TORCH_CONFIGURED
+    if _TORCH_CONFIGURED:
+        return
+
+    num_threads = _env_int("TORCH_NUM_THREADS")
+    if num_threads is not None:
+        if num_threads < 1:
+            raise RuntimeError("TORCH_NUM_THREADS must be >= 1.")
+        torch.set_num_threads(num_threads)
+
+    interop_threads = _env_int("TORCH_NUM_INTEROP_THREADS")
+    if interop_threads is not None:
+        if interop_threads < 1:
+            raise RuntimeError("TORCH_NUM_INTEROP_THREADS must be >= 1.")
+        torch.set_num_interop_threads(interop_threads)
+
+    _TORCH_CONFIGURED = True
 
 
 def _urlsafe_b64encode_bytes(value):
@@ -210,6 +247,7 @@ def _cleanup_expired_outputs(now=None):
 
 @lru_cache(maxsize=3)
 def _load_model(architecture):
+    configure_torch()
     return SteganoGAN.load(architecture=architecture, cuda=False, verbose=False)
 
 
