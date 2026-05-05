@@ -160,7 +160,8 @@ def _parse_encrypted_payload(payload):
 
     encoded_segments = payload[len(ENCRYPTED_PAYLOAD_PREFIX):].split(".")
     try:
-        salt, nonce, ciphertext = [_urlsafe_b64decode_text(segment) for segment in encoded_segments]
+        salt, nonce, ciphertext = [_urlsafe_b64decode_text(
+            segment) for segment in encoded_segments]
     except (BinasciiError, ValueError, TypeError):
         raise ServiceValidationError("Invalid passphrase or corrupted payload.") from None
 

@@ -19,6 +19,12 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 
 
+@app.on_event("startup")
+def warm_model():
+    services.configure_torch()
+    services.get_model(DEFAULT_ARCHITECTURE)
+
+
 @app.get("/", response_class=HTMLResponse)
 def root(request: Request):
     return templates.TemplateResponse(

@@ -56,11 +56,13 @@ Optional runtime settings:
 - `PORT`: container port to bind Gunicorn to. Default: `8000`
 - `WEB_CONCURRENCY`: number of Gunicorn workers. Default: `2`
 - `TIMEOUT`: worker timeout in seconds. Default: `120`
+- `TORCH_NUM_THREADS`: PyTorch intra-op CPU threads. Default: PyTorch default.
+- `TORCH_NUM_INTEROP_THREADS`: PyTorch inter-op CPU threads. Default: PyTorch default.
 
 Example with custom settings:
 
 ```powershell
-docker run --rm -p 8000:8000 -e WEB_CONCURRENCY=1 -e TIMEOUT=180 steg
+docker run --rm -p 8000:8000 -e WEB_CONCURRENCY=1 -e TIMEOUT=180 -e TORCH_NUM_THREADS=4 -e TORCH_NUM_INTEROP_THREADS=1 steg
 ```
 
 ## Using the Web App
@@ -95,6 +97,7 @@ docker run --rm -p 8000:8000 -e WEB_CONCURRENCY=1 -e TIMEOUT=180 steg
 - Uploaded images are normalized to RGB and resized if their longest side exceeds `2048px`.
 - Generated outputs are stored temporarily and are cleaned up automatically after a short retention window.
 - The app currently runs model inference on the server process, so very large or frequent requests may still be compute-heavy.
+- The model is loaded on startup per worker to avoid per-request load overhead.
 - If the passphrase is lost, the hidden message cannot be recovered.
 
 ## Project Structure

@@ -3,6 +3,7 @@ import gc
 import inspect
 import json
 import os
+import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
 from collections import Counter
@@ -13,6 +14,7 @@ from imageio import imread, imwrite
 from torch.nn.functional import binary_cross_entropy_with_logits, mse_loss
 from torch.optim import Optimizer
 from torch.optim import Adam
+from torch.serialization import SourceChangeWarning
 from tqdm import tqdm
 
 from steganogan.utils import bits_to_bytearray, bytearray_to_text, ssim, text_to_bits
@@ -337,7 +339,7 @@ class SteganoGAN(object):
         cover = cover.to(self.device)
         payload = payload.to(self.device)
         self.encoder.eval()
-        with torch.no_grad():
+        with torch.inference_mode():
             generated = self.encoder(cover, payload)[0].clamp(-1.0, 1.0)
 
         generated = (generated.permute(2, 1, 0).detach().cpu().numpy() + 1.0) * 127.5
@@ -357,7 +359,7 @@ class SteganoGAN(object):
         image = image.to(self.device)
 
         self.decoder.eval()
-        with torch.no_grad():
+        with torch.inference_mode():
             image = self.decoder(image).view(-1) > 0
 
         # split and decode messages
@@ -401,7 +403,9 @@ class SteganoGAN(object):
                 'Please provide either an architecture or a path to pretrained model.')
 
         with cls._legacy_optimizer_compat():
-            steganogan = torch.load(path, map_location='cpu', weights_only=False)
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore', category=SourceChangeWarning)
+                steganogan = torch.load(path, map_location='cpu', weights_only=False)
 
         steganogan.critic_optimizer = None
         steganogan.decoder_optimizer = None
