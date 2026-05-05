@@ -9,7 +9,10 @@
 - [x] Warm the model at FastAPI startup to remove per-request load overhead.
 - [x] Use torch inference optimizations for encode/decode paths.
 - [x] Add optional CPU thread tuning via env for server deployments.
-- [x] Verify warnings no longer appear per request and measure response times.
+- [ ] Verify warnings no longer appear per request and measure response times.
+
+### Notes
+- Tests: `python -m pytest tests/webapp/test_services.py -v` (system Python) passed.
 
 # Review
 - [x] Verified `git check-ignore -v report` shows ignore rule.
