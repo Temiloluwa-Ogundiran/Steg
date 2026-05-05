@@ -1,0 +1,146 @@
+
+<h2>Three Layout Approaches</h2>
+<p class="subtitle">Click any approach to select your preference. All three are shown at the same scale for direct comparison.</p>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Segmented Mode Grid</h3>
+      <p>Horizontal tab bar (Encode / Decode / Check). Clean, scannable, minimal switching friction.</p>
+      <div class="mockup" style="margin-top:12px; background:#111; color:#fff; font-family:'JetBrains Mono',monospace; font-size:10px; padding:0; border:1px solid #333;">
+        <div style="border-bottom:1px solid #333; padding:8px 12px; display:flex; align-items:center; gap:8px;">
+          <div style="width:6px;height:6px;background:#fff;"></div>
+          <span style="color:#555; font-size:9px;">STEG v0.1.0</span>
+        </div>
+        <div style="display:flex; min-height:180px;">
+          <div style="flex:1; padding:12px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; text-transform:uppercase; margin-bottom:12px;">STEG</div>
+            <div style="display:flex; border:1px solid #333; margin-bottom:12px;">
+              <div style="flex:1; padding:8px; text-align:center; border-right:1px solid #333; background:#fff; color:#000; font-size:9px;">ENCODE</div>
+              <div style="flex:1; padding:8px; text-align:center; border-right:1px solid #333; color:#555; font-size:9px;">DECODE</div>
+              <div style="flex:1; padding:8px; text-align:center; color:#555; font-size:9px;">CHECK</div>
+            </div>
+            <div style="border:1px solid #333; padding:8px; margin-bottom:8px; color:#555; font-size:9px;">[FILE] cover.png</div>
+            <div style="border:1px solid #333; padding:8px; margin-bottom:8px; color:#555; font-size:9px; min-height:40px;">Payload...</div>
+            <div style="border:1px solid #333; padding:8px; color:#555; font-size:9px;">••••••••••••</div>
+          </div>
+          <div style="width:120px; border-left:1px solid #333; background:#050505; padding:8px; display:flex; flex-direction:column;">
+            <div style="color:#555; font-size:8px; margin-bottom:8px;">TERMINAL</div>
+            <div style="flex:1; color:#555; font-size:9px;">Awaiting...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Vertical Node Dial</h3>
+      <p>Vertical step indicator on the left. Pipeline feel. More distinctive but takes horizontal space.</p>
+      <div class="mockup" style="margin-top:12px; background:#111; color:#fff; font-family:'JetBrains Mono',monospace; font-size:10px; padding:0; border:1px solid #333;">
+        <div style="border-bottom:1px solid #333; padding:8px 12px; display:flex; align-items:center; gap:8px;">
+          <div style="width:6px;height:6px;background:#fff;"></div>
+          <span style="color:#555; font-size:9px;">STEG v0.1.0</span>
+        </div>
+        <div style="display:flex; min-height:180px;">
+          <div style="width:100px; border-right:1px solid #333; padding:12px 8px; display:flex; flex-direction:column; gap:16px; align-items:center;">
+            <div style="width:8px;height:8px;background:#fff;"></div>
+            <div style="width:1px;flex:1;background:#333;"></div>
+            <div style="width:8px;height:8px;border:1px solid #555;"></div>
+            <div style="width:1px;flex:1;background:#333;"></div>
+            <div style="width:8px;height:8px;border:1px solid #555;"></div>
+          </div>
+          <div style="flex:1; padding:12px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; text-transform:uppercase; margin-bottom:12px;">STEG</div>
+            <div style="border:1px solid #333; padding:8px; margin-bottom:8px; color:#555; font-size:9px;">[FILE] cover.png</div>
+            <div style="border:1px solid #333; padding:8px; margin-bottom:8px; color:#555; font-size:9px; min-height:40px;">Payload...</div>
+            <div style="border:1px solid #333; padding:8px; color:#555; font-size:9px;">••••••••••••</div>
+          </div>
+          <div style="width:120px; border-left:1px solid #333; background:#050505; padding:8px; display:flex; flex-direction:column;">
+            <div style="color:#555; font-size:8px; margin-bottom:8px;">TERMINAL</div>
+            <div style="flex:1; color:#555; font-size:9px;">Awaiting...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Dashboard Grid (All Visible)</h3>
+      <p>All three modes visible at once. No switching, but potentially cluttered.</p>
+      <div class="mockup" style="margin-top:12px; background:#111; color:#fff; font-family:'JetBrains Mono',monospace; font-size:10px; padding:0; border:1px solid #333;">
+        <div style="border-bottom:1px solid #333; padding:8px 12px; display:flex; align-items:center; gap:8px;">
+          <div style="width:6px;height:6px;background:#fff;"></div>
+          <span style="color:#555; font-size:9px;">STEG v0.1.0</span>
+        </div>
+        <div style="display:flex; min-height:180px;">
+          <div style="flex:1; padding:12px; overflow:hidden;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; text-transform:uppercase; margin-bottom:8px;">STEG</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+              <div style="border:1px solid #333; padding:6px; opacity:1;">
+                <div style="color:#fff; font-size:9px; margin-bottom:4px;">ENCODE</div>
+                <div style="border:1px solid #333; padding:4px; color:#555; font-size:8px; margin-bottom:4px;">[FILE]</div>
+                <div style="border:1px solid #333; padding:4px; color:#555; font-size:8px;">MSG</div>
+              </div>
+              <div style="border:1px solid #333; padding:6px; opacity:0.4;">
+                <div style="color:#555; font-size:9px; margin-bottom:4px;">DECODE</div>
+                <div style="border:1px solid #333; padding:4px; color:#555; font-size:8px; margin-bottom:4px;">[FILE]</div>
+                <div style="border:1px solid #333; padding:4px; color:#555; font-size:8px;">KEY</div>
+              </div>
+              <div style="border:1px solid #333; padding:6px; opacity:0.4;">
+                <div style="color:#555; font-size:9px; margin-bottom:4px;">CHECK</div>
+                <div style="border:1px solid #333; padding:4px; color:#555; font-size:8px;">[FILE]</div>
+              </div>
+            </div>
+          </div>
+          <div style="width:120px; border-left:1px solid #333; background:#050505; padding:8px; display:flex; flex-direction:column;">
+            <div style="color:#555; font-size:8px; margin-bottom:8px;">TERMINAL</div>
+            <div style="flex:1; color:#555; font-size:9px;">Awaiting...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Trade-offs</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Approach A (Recommended)</h4>
+      <ul>
+        <li>Fastest mode switching (single click)</li>
+        <li>Fits template's "Mode Calibration Grid" perfectly</li>
+        <li>Cleanest horizontal scan</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Approach B</h4>
+      <ul>
+        <li>Vertical pipeline metaphor is strong</li>
+        <li>Takes more width away from forms</li>
+        <li>Mode labels may truncate on small screens</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Approach C</h4>
+      <ul>
+        <li>Zero switching friction</li>
+        <li>Overwhelming density with 3 file inputs</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Overall</h4>
+      <ul>
+        <li>All three keep the terminal sidebar</li>
+        <li>All use the same color/type system</li>
+      </ul>
+    </div>
+  </div>
+</div>

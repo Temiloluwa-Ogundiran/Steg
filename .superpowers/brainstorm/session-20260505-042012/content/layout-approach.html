@@ -1,0 +1,128 @@
+<h2>Layout Approach A: Segmented Mode Grid + Terminal Results</h2>
+<p class="subtitle">Mode selector acts as segmented radio grid. Form fields adapt per mode. Right sidebar is a terminal echo panel for results.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Preview: Main Workspace Layout</div>
+  <div class="mockup-body" style="background:#111; color:#fff; font-family: 'JetBrains Mono', monospace; font-size:11px; padding:0;">
+    <!-- Header -->
+    <div style="border-bottom:1px solid #333; padding:12px 16px; display:flex; align-items:center; gap:12px;">
+      <div style="width:8px;height:8px;background:#fff;animation:pulse 2s infinite;"></div>
+      <span style="color:#555; font-size:10px; text-transform:uppercase;">STEG v0.1.0 [BUILD 001]</span>
+      <span style="margin-left:auto; color:#555; font-size:10px;">// SYSTEM READY</span>
+    </div>
+    
+    <!-- Main + Sidebar -->
+    <div style="display:flex; min-height:420px;">
+      <!-- Left Main -->
+      <div style="flex:1; padding:24px; min-width:0;">
+        <h1 style="font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; text-transform:uppercase; margin:0 0 4px; letter-spacing:-0.02em;">STEGANOGRAPHY</h1>
+        <p style="color:#555; font-size:10px; margin:0 0 24px;">// Hide signal. Reveal truth.</p>
+        
+        <!-- Mode Grid -->
+        <div style="margin-bottom:24px;">
+          <div style="color:#555; font-size:10px; text-transform:uppercase; margin-bottom:8px;">01 // MODE</div>
+          <div style="display:flex; border:1px solid #333;">
+            <div style="flex:1; padding:12px; text-align:center; border-right:1px solid #333; background:#fff; color:#000; font-weight:700;">ENCODE</div>
+            <div style="flex:1; padding:12px; text-align:center; border-right:1px solid #333; color:#555;">DECODE</div>
+            <div style="flex:1; padding:12px; text-align:center; color:#555;">CHECK</div>
+          </div>
+        </div>
+        
+        <!-- Form Fields -->
+        <div style="margin-bottom:16px;">
+          <div style="color:#555; font-size:10px; text-transform:uppercase; margin-bottom:8px;">02 // INPUT</div>
+          <div style="border:1px solid #333; padding:12px; display:flex; align-items:center; gap:8px;">
+            <span style="color:#555;">[FILE]</span>
+            <span style="color:#e5e5e5;">cover.png</span>
+            <span style="margin-left:auto; color:#555; font-size:10px;">8x8 PX</span>
+          </div>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="color:#555; font-size:10px; text-transform:uppercase; margin-bottom:8px;">03 // PAYLOAD</div>
+          <div style="border:1px solid #333; padding:12px; min-height:80px; color:#555;">
+            Enter hidden message...
+          </div>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="color:#555; font-size:10px; text-transform:uppercase; margin-bottom:8px;">04 // KEY</div>
+          <div style="border:1px solid #333; padding:12px; color:#555;">
+            ••••••••••••
+          </div>
+        </div>
+        
+        <!-- Action -->
+        <div style="display:flex; justify-content:flex-end; margin-top:24px;">
+          <button style="background:#fff; color:#000; border:0; padding:12px 24px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; text-transform:uppercase; cursor:pointer;">
+            EXECUTE &gt;
+          </button>
+        </div>
+      </div>
+      
+      <!-- Right Terminal Sidebar -->
+      <div style="width:340px; border-left:1px solid #333; background:#050505; padding:16px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+          <span style="color:#555; font-size:10px; text-transform:uppercase;">Terminal // :8000</span>
+          <span style="color:#4ade80; font-size:10px;">● LISTENING</span>
+        </div>
+        <div style="flex:1; font-size:11px; line-height:1.6;">
+          <div style="color:#333;">01</div>
+          <div style="color:#555;">02 // Awaiting input...</div>
+          <div style="color:#333;">03</div>
+          <div style="color:#555;">04</div>
+          <div style="color:#333;">05</div>
+          <div style="color:#555;">06 Select mode and submit.</div>
+        </div>
+        <div style="border-top:1px solid #333; padding-top:8px; margin-top:auto; display:flex; justify-content:space-between; font-size:10px; color:#555;">
+          <span>RAM: 42%</span>
+          <span>CPU: 6.1%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Approach B: Vertical Node Dial</h3>
+  <p class="subtitle">Modes selected via vertical step indicator on the left. Main area is wider. Terminal sidebar remains.</p>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Pros</h4>
+      <ul>
+        <li>More distinctive, follows template's "DNA" section closely</li>
+        <li>Vertical hierarchy feels like a pipeline</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Cons</h4>
+      <ul>
+        <li>Takes more horizontal space</li>
+        <li>Less immediately scannable than a grid</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Approach C: Dashboard Grid (All Visible)</h3>
+  <p class="subtitle">All three mode forms visible simultaneously. Active mode highlighted, others dimmed. Terminal sidebar remains.</p>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Pros</h4>
+      <ul>
+        <li>No mode switching needed</li>
+        <li>Full density</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Cons</h4>
+      <ul>
+        <li>Cluttered — three file inputs visible at once</li>
+        <li>Confusing which submit button to press</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle"><strong>My recommendation: Approach A</strong> — it's the cleanest mapping of the template to our 3-mode workflow. The segmented grid is instantly understandable, and the terminal sidebar gives us that developer-aesthetic result panel you wanted.</p>
