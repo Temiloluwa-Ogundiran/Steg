@@ -31,13 +31,15 @@ def test_encode_endpoint_returns_json_payload(client, monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "ok": True,
-        "output_id": "abc123",
-        "download_url": "/api/download/abc123",
-        "filename": "steg-cover.png",
-        "architecture": "dense",
-    }
+    payload = response.json()
+    assert payload["ok"] is True
+    assert payload["output_id"] == "abc123"
+    assert payload["download_url"] == "/api/download/abc123"
+    assert payload["filename"] == "steg-cover.png"
+    assert payload["architecture"] == "dense"
+    assert "metrics" in payload
+    assert "cpu_percent" in payload["metrics"]
+    assert "ram_percent" in payload["metrics"]
     _, kwargs = encode_image.call_args
     assert kwargs["architecture"] == "dense"
     assert kwargs["filename"] == "cover.png"
@@ -65,11 +67,13 @@ def test_decode_endpoint_returns_json_payload(client, monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "ok": True,
-        "message": "hello",
-        "architecture": "dense",
-    }
+    payload = response.json()
+    assert payload["ok"] is True
+    assert payload["message"] == "hello"
+    assert payload["architecture"] == "dense"
+    assert "metrics" in payload
+    assert "cpu_percent" in payload["metrics"]
+    assert "ram_percent" in payload["metrics"]
     _, kwargs = decode_image.call_args
     assert kwargs["architecture"] == "dense"
     assert kwargs["filename"] == "encoded.png"
@@ -96,12 +100,14 @@ def test_check_endpoint_returns_json_payload(client, monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "ok": True,
-        "hidden_data": False,
-        "message": "No hidden data found.",
-        "architecture": "dense",
-    }
+    payload = response.json()
+    assert payload["ok"] is True
+    assert payload["hidden_data"] is False
+    assert payload["message"] == "No hidden data found."
+    assert payload["architecture"] == "dense"
+    assert "metrics" in payload
+    assert "cpu_percent" in payload["metrics"]
+    assert "ram_percent" in payload["metrics"]
     _, kwargs = check_image.call_args
     assert kwargs["architecture"] == "dense"
     assert kwargs["filename"] == "plain.png"

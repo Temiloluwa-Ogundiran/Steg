@@ -1,10 +1,8 @@
-console.log("[STEG] app.js v2 loaded");
+console.log("[STEG] app.js v3 loaded");
 
 const modeButtons = document.querySelectorAll("[data-mode-target]");
 const modePanels = document.querySelectorAll("[data-mode-panel]");
 const terminalBody = document.getElementById("terminal-body");
-const ramDisplay = document.getElementById("ram-display");
-const cpuDisplay = document.getElementById("cpu-display");
 const forms = document.querySelectorAll(".tool-form");
 
 document.documentElement.dataset.stegReady = "true";
@@ -73,25 +71,27 @@ function renderError(message) {
   ]);
 }
 
-function renderEncodeResult(data, metrics) {
+function renderEncodeResult(data) {
   const lines = [
     { content: "STATUS ok", type: "success" },
-    { content: `download_url: "${escapeHtml(data.download_url)}"`, type: "variable" },
     { content: `filename: "${escapeHtml(data.filename)}"`, type: "variable" },
     { content: "" },
     { content: `<img class="terminal__preview" src="${escapeHtml(data.download_url)}" alt="Encoded image preview">`, type: "" },
     { content: "" },
     { content: `<div class="terminal__actions"><a class="terminal__link" href="${escapeHtml(data.download_url)}" download="${escapeHtml(data.filename)}">DOWNLOAD &gt;</a></div>`, type: "" },
   ];
-  if (metrics) {
+
+  if (data.metrics) {
     lines.push({ content: "" });
-    lines.push({ content: `// RAM: ${metrics.ram_percent}%  CPU: ${metrics.cpu_percent}%`, type: "comment" });
+    lines.push({ content: `// RAM: ${data.metrics.ram_percent}%  CPU: ${data.metrics.cpu_percent}%`, type: "comment" });
   }
+
   renderTerminal(lines);
 }
 
-function renderDecodeResult(data, metrics) {
+function renderDecodeResult(data) {
   const lines = [];
+
   if (data.ok) {
     lines.push({ content: "STATUS ok", type: "success" });
     lines.push({ content: `message: "${escapeHtml(data.message)}"`, type: "string" });
@@ -101,14 +101,16 @@ function renderDecodeResult(data, metrics) {
     lines.push({ content: "" });
     lines.push({ content: escapeHtml(data.message || "No hidden message found."), type: "comment" });
   }
-  if (metrics) {
+
+  if (data.metrics) {
     lines.push({ content: "" });
-    lines.push({ content: `// RAM: ${metrics.ram_percent}%  CPU: ${metrics.cpu_percent}%`, type: "comment" });
+    lines.push({ content: `// RAM: ${data.metrics.ram_percent}%  CPU: ${data.metrics.cpu_percent}%`, type: "comment" });
   }
+
   renderTerminal(lines);
 }
 
-function renderCheckResult(data, metrics) {
+function renderCheckResult(data) {
   const statusType = data.hidden_data ? "success" : "comment";
   const statusText = data.hidden_data ? "true" : "false";
 
@@ -117,10 +119,12 @@ function renderCheckResult(data, metrics) {
     { content: `hidden_data: ${statusText}`, type: statusType },
     { content: 'architecture: "dense"', type: "variable" },
   ];
-  if (metrics) {
+
+  if (data.metrics) {
     lines.push({ content: "" });
-    lines.push({ content: `// RAM: ${metrics.ram_percent}%  CPU: ${metrics.cpu_percent}%`, type: "comment" });
+    lines.push({ content: `// RAM: ${data.metrics.ram_percent}%  CPU: ${data.metrics.cpu_percent}%`, type: "comment" });
   }
+
   renderTerminal(lines);
 }
 
@@ -134,30 +138,6 @@ function setSubmitting(form, isSubmitting) {
 
   button.disabled = isSubmitting;
   button.textContent = isSubmitting ? "PROCESSING..." : button.dataset.defaultText;
-}
-
-async function fetchMetrics() {
-  try {
-    const response = await fetch("/api/metrics");
-    if (!response.ok) {
-      console.warn("[STEG] metrics endpoint returned", response.status);
-      return null;
-    }
-    return await response.json();
-  } catch (err) {
-    console.warn("[STEG] metrics fetch failed:", err.message);
-    return null;
-  }
-}
-
-function updateFooter(metrics) {
-  if (!metrics) return;
-  if (ramDisplay) {
-    ramDisplay.textContent = `RAM: ${metrics.ram_percent}%`;
-  }
-  if (cpuDisplay) {
-    cpuDisplay.textContent = `CPU: ${metrics.cpu_percent}%`;
-  }
 }
 
 async function handleSubmit(event) {
@@ -195,8 +175,6 @@ async function handleSubmit(event) {
       body: payload,
     });
     const data = await response.json();
-    const metrics = await fetchMetrics();
-    updateFooter(metrics);
 
     if (!response.ok) {
       renderError(data.detail || "The request could not be completed.");
@@ -204,11 +182,11 @@ async function handleSubmit(event) {
     }
 
     if (kind === "encode") {
-      renderEncodeResult(data, metrics);
+      renderEncodeResult(data);
     } else if (kind === "decode") {
-      renderDecodeResult(data, metrics);
+      renderDecodeResult(data);
     } else {
-      renderCheckResult(data, metrics);
+      renderCheckResult(data);
     }
   } catch (error) {
     renderError("A network or server error interrupted the request.");
@@ -253,14 +231,3 @@ forms.forEach((form) => {
     fileInput.addEventListener("change", () => updateFileLabel(fileInput));
   }
 });
-
-// Live metrics polling for footer
-(async function initMetrics() {
-  const metrics = await fetchMetrics();
-  updateFooter(metrics);
-})();
-
-setInterval(async () => {
-  const metrics = await fetchMetrics();
-  updateFooter(metrics);
-}, 2000);

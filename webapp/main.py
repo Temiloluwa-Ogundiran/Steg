@@ -43,13 +43,13 @@ def favicon():
     return Response(status_code=204)
 
 
-@app.get("/api/metrics")
-def get_metrics():
+def _capture_operation_metrics():
     try:
         import psutil
-        ram = psutil.virtual_memory().percent
-        cpu = psutil.cpu_percent(interval=None)
-        return {"ram_percent": round(ram, 1), "cpu_percent": round(cpu, 1)}
+        return {
+            "ram_percent": round(psutil.virtual_memory().percent, 1),
+            "cpu_percent": round(psutil.cpu_percent(interval=None), 1),
+        }
     except ImportError:
         return {"ram_percent": 0.0, "cpu_percent": 0.0}
 
@@ -71,13 +71,15 @@ async def encode_image(
         )
 
     try:
-        return services.encode_image(
+        result = services.encode_image(
             architecture=DEFAULT_ARCHITECTURE,
             filename=image.filename or "image.png",
             upload=image,
             message=message,
             passphrase=passphrase,
         )
+        result["metrics"] = _capture_operation_metrics()
+        return result
     except services.ServiceValidationError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except services.ProcessingError as error:
@@ -100,12 +102,14 @@ async def decode_image(
         )
 
     try:
-        return services.decode_image(
+        result = services.decode_image(
             architecture=DEFAULT_ARCHITECTURE,
             filename=image.filename or "image.png",
             upload=image,
             passphrase=passphrase,
         )
+        result["metrics"] = _capture_operation_metrics()
+        return result
     except services.ServiceValidationError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except services.ProcessingError as error:
@@ -119,11 +123,13 @@ async def check_image(
     image: UploadFile = File(...),
 ):
     try:
-        return services.check_image(
+        result = services.check_image(
             architecture=DEFAULT_ARCHITECTURE,
             filename=image.filename or "image.png",
             upload=image,
         )
+        result["metrics"] = _capture_operation_metrics()
+        return result
     except services.ServiceValidationError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except services.ProcessingError as error:
