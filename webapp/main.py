@@ -43,6 +43,17 @@ def favicon():
     return Response(status_code=204)
 
 
+@app.get("/api/metrics")
+def get_metrics():
+    try:
+        import psutil
+        ram = psutil.virtual_memory().percent
+        cpu = psutil.cpu_percent(interval=None)
+        return {"ram_percent": round(ram, 1), "cpu_percent": round(cpu, 1)}
+    except ImportError:
+        return {"ram_percent": 0.0, "cpu_percent": 0.0}
+
+
 @app.post("/api/encode")
 async def encode_image(
     image: UploadFile = File(...),
